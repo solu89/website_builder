@@ -1,0 +1,2272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SOLU WEBSITE BUILDER PRO — Offline Visual Drag & Drop Studio</title>
+  <style>
+    :root {
+      --bg-app: #0b0f19;
+      --bg-panel: #111827;
+      --bg-panel-alt: #161f33;
+      --bg-card: #1e293b;
+      --bg-hover: #263349;
+      --border: #28354d;
+      --border-light: #364766;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --accent: #6366f1;
+      --accent-hover: #4f46e5;
+      --accent-glow: rgba(99, 102, 241, 0.25);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg-app); color: var(--text-main); font-family: var(--font-ui); font-size: 13px; -webkit-font-smoothing: antialiased; }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    /* Top Studio Header */
+    .studio-header {
+      height: 54px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      gap: 8px;
+      z-index: 40;
+      user-select: none;
+    }
+    .brand-box { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .brand-logo {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: linear-gradient(135deg, #6366f1, #ec4899);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 14px; color: #fff; flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+    }
+    .brand-title { font-weight: 800; font-size: 14px; letter-spacing: 0.3px; white-space: nowrap; }
+    .brand-badge {
+      font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 99px;
+      background: rgba(16, 185, 129, 0.14); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);
+      white-space: nowrap;
+    }
+
+    .toolbar-group { display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; }
+    .toolbar-divider { width: 1px; height: 24px; background: var(--border); margin: 0 3px; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+      padding: 6px 10px; border-radius: 7px; border: 1px solid var(--border);
+      background: var(--bg-card); color: var(--text-main); font-family: inherit;
+      font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn:hover:not(:disabled) { background: var(--bg-hover); border-color: var(--border-light); }
+    .btn:active:not(:disabled) { transform: translateY(1px); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 0 2px var(--accent-glow); }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+    .btn-success { background: #059669; border-color: #10b981; color: #fff; }
+    .btn-success:hover { background: #047857; }
+    .btn-danger { color: #f87171; }
+    .btn-danger:hover { background: rgba(239, 68, 68, 0.15); border-color: #ef4444; }
+    .btn-icon { padding: 6px 8px; }
+
+    select.studio-select {
+      background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border);
+      border-radius: 7px; padding: 6px 8px; font-size: 12px; font-weight: 600; cursor: pointer; outline: none;
+    }
+    select.studio-select:hover { border-color: var(--border-light); }
+
+    /* Main 3-Column Studio Workspace */
+    .studio-workspace {
+      display: grid;
+      grid-template-columns: 285px 1fr 315px;
+      height: calc(100vh - 54px);
+      overflow: hidden;
+    }
+
+    /* Sidebars */
+    .sidebar {
+      background: var(--bg-panel);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      user-select: none;
+    }
+    .sidebar-left { border-right: 1px solid var(--border); }
+    .sidebar-right { border-left: 1px solid var(--border); }
+
+    .tabs-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: var(--bg-panel-alt);
+      border-bottom: 1px solid var(--border);
+      padding: 4px;
+      gap: 4px;
+    }
+    .tab-btn {
+      padding: 7px 4px; border-radius: 6px; border: none; background: transparent;
+      color: var(--text-muted); font-size: 11px; font-weight: 700; cursor: pointer;
+      transition: 0.15s; text-align: center;
+    }
+    .tab-btn:hover { color: var(--text-main); background: rgba(255,255,255,0.04); }
+    .tab-btn.active { background: var(--accent); color: #fff; }
+
+    .sidebar-scroll { flex: 1; overflow-y: auto; padding: 12px; }
+
+    /* Palette Items */
+    .palette-section-title {
+      font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--text-dim); margin: 8px 0 8px;
+    }
+    .palette-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .palette-item {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 9px;
+      padding: 10px 8px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+      cursor: grab; transition: all 0.15s ease; text-align: center;
+    }
+    .palette-item:hover {
+      border-color: var(--accent); background: var(--bg-hover); transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    }
+    .palette-item:active { cursor: grabbing; }
+    .palette-item svg { width: 20px; height: 20px; color: #818cf8; }
+    .palette-item span { font-size: 11px; font-weight: 600; color: var(--text-main); line-height: 1.2; }
+
+    .section-card-item {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 9px;
+      padding: 10px 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;
+      cursor: grab; transition: all 0.15s ease;
+    }
+    .section-card-item:hover { border-color: var(--accent); background: var(--bg-hover); }
+    .section-card-info { display: flex; align-items: center; gap: 9px; }
+    .section-card-icon {
+      width: 28px; height: 28px; border-radius: 7px; background: rgba(99, 102, 241, 0.14);
+      color: #818cf8; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .section-card-title { font-size: 12px; font-weight: 700; }
+    .section-card-desc { font-size: 10px; color: var(--text-muted); }
+
+    /* Layers Tree */
+    .layer-node {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 8px; border-radius: 6px; margin-bottom: 3px;
+      background: var(--bg-card); border: 1px solid transparent; cursor: pointer;
+      font-size: 11px; font-weight: 600;
+    }
+    .layer-node:hover { background: var(--bg-hover); }
+    .layer-node.selected { border-color: var(--accent); background: rgba(99, 102, 241, 0.18); color: #fff; }
+    .layer-children { padding-left: 14px; border-left: 1px dashed var(--border-light); margin-left: 8px; margin-bottom: 4px; }
+    .layer-actions { display: flex; gap: 3px; opacity: 0.7; }
+    .layer-node:hover .layer-actions { opacity: 1; }
+    .layer-mini-btn {
+      background: transparent; border: none; color: var(--text-muted); cursor: pointer;
+      padding: 2px 4px; border-radius: 4px; font-size: 11px;
+    }
+    .layer-mini-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+    /* Center Canvas Stage */
+    .canvas-stage-wrapper {
+      background: #070a12;
+      background-image: radial-gradient(#1e293b 1px, transparent 1px);
+      background-size: 18px 18px;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+    }
+    .canvas-frame {
+      width: 100%;
+      max-width: 100%;
+      min-height: calc(100vh - 96px);
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255,255,255,0.08);
+      border-radius: 8px;
+      transition: width 0.25s ease, max-width 0.25s ease;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .canvas-frame.vp-tablet { width: 768px; max-width: 768px; }
+    .canvas-frame.vp-mobile { width: 375px; max-width: 375px; }
+
+    .empty-canvas-dropzone {
+      min-height: 460px; margin: 24px; border: 2px dashed #cbd5e1; border-radius: 14px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 32px; color: #475569; transition: 0.2s;
+    }
+    .empty-canvas-dropzone.drag-over { border-color: #6366f1; background: rgba(99, 102, 241, 0.06); }
+
+    /* Builder Selection & Drag Handles inside Canvas */
+    .wb-node {
+      position: relative;
+      outline: 1px dashed transparent;
+      transition: outline-color 0.12s ease;
+    }
+    .wb-node:hover { outline: 1px dashed rgba(99, 102, 241, 0.65); }
+    .wb-node.wb-selected {
+      outline: 2px solid #6366f1 !important;
+      outline-offset: -1px;
+      z-index: 10;
+    }
+    .wb-node.drop-before::before {
+      content: ""; position: absolute; top: -3px; left: 0; right: 0; height: 4px;
+      background: #10b981; border-radius: 4px; z-index: 30; pointer-events: none;
+    }
+    .wb-node.drop-after::after {
+      content: ""; position: absolute; bottom: -3px; left: 0; right: 0; height: 4px;
+      background: #10b981; border-radius: 4px; z-index: 30; pointer-events: none;
+    }
+
+    .wb-floating-toolbar {
+      position: absolute; top: -28px; right: 4px;
+      background: #4f46e5; color: #fff; border-radius: 6px;
+      display: flex; align-items: center; gap: 2px; padding: 2px 5px;
+      font-size: 11px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 50; user-select: none;
+    }
+    .wb-section > .wb-floating-toolbar { top: 4px; right: 6px; }
+    .wb-tool-btn {
+      background: transparent; border: none; color: #fff; cursor: pointer;
+      padding: 2px 5px; border-radius: 4px; font-size: 11px; display: inline-flex; align-items: center;
+    }
+    .wb-tool-btn:hover { background: rgba(255,255,255,0.2); }
+    .wb-node-tag { font-size: 10px; text-transform: uppercase; padding: 0 5px; opacity: 0.9; letter-spacing: 0.4px; }
+
+    /* Grid Drop Slots */
+    .wb-grid-col {
+      min-height: 76px;
+      border: 1px dashed rgba(148, 163, 184, 0.55);
+      border-radius: 6px;
+      padding: 8px;
+      transition: 0.15s;
+    }
+    .wb-grid-col.drag-over {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.08);
+    }
+    .wb-col-placeholder {
+      height: 100%; min-height: 58px; display: flex; align-items: center; justify-content: center;
+      color: #94a3b8; font-size: 11px; font-weight: 600; pointer-events: none;
+    }
+
+    /* Inline Editing */
+    [contenteditable="true"] {
+      outline: 2px solid #10b981 !important;
+      background: rgba(16, 185, 129, 0.06);
+      border-radius: 4px;
+      cursor: text;
+    }
+
+    /* Right Inspector Controls */
+    .prop-group {
+      background: var(--bg-panel-alt); border: 1px solid var(--border); border-radius: 9px;
+      padding: 10px; margin-bottom: 10px;
+    }
+    .prop-group-title {
+      font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+      color: #a5b4fc; margin-bottom: 9px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .prop-row { margin-bottom: 9px; }
+    .prop-row:last-child { margin-bottom: 0; }
+    .prop-label {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;
+    }
+    .prop-input, .prop-textarea, .prop-select {
+      width: 100%; background: var(--bg-app); color: var(--text-main);
+      border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px;
+      font-family: inherit; font-size: 12px; outline: none;
+    }
+    .prop-input:focus, .prop-textarea:focus, .prop-select:focus { border-color: var(--accent); }
+    .prop-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .prop-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+
+    .color-picker-wrap {
+      display: flex; align-items: center; gap: 6px; background: var(--bg-app);
+      border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px;
+    }
+    .color-picker-wrap input[type="color"] {
+      width: 24px; height: 22px; border: none; background: transparent; cursor: pointer; padding: 0;
+    }
+    .color-picker-wrap input[type="text"] {
+      width: 100%; border: none; background: transparent; color: var(--text-main);
+      font-family: var(--font-mono); font-size: 11px; outline: none;
+    }
+
+    input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+
+    .align-btn-group { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+    .align-btn {
+      padding: 5px; border-radius: 5px; border: 1px solid var(--border); background: var(--bg-app);
+      color: var(--text-muted); cursor: pointer; font-size: 11px; font-weight: 700;
+    }
+    .align-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    /* Modals (Live Preview & Source Code) */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(2, 6, 23, 0.88); backdrop-filter: blur(6px);
+      z-index: 100; display: none; flex-direction: column;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-header {
+      height: 52px; background: var(--bg-panel); border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
+    }
+    .modal-body { flex: 1; overflow: auto; padding: 16px; display: flex; justify-content: center; }
+    .code-viewer-box {
+      width: 100%; max-width: 1050px; background: #090d16; color: #e2e8f0;
+      border: 1px solid var(--border); border-radius: 10px; padding: 16px;
+      font-family: var(--font-mono); font-size: 12px; line-height: 1.55;
+      white-space: pre; overflow: auto;
+    }
+    .preview-iframe {
+      width: 100%; height: 100%; border: none; background: #fff; border-radius: 8px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6); transition: width 0.25s ease;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #1e293b; color: #fff; border: 1px solid var(--accent);
+      padding: 9px 16px; border-radius: 99px; font-size: 12px; font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.45); z-index: 200; opacity: 0;
+      transition: all 0.25s ease; pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* Responsive Studio Collapse */
+    @media (max-width: 1100px) {
+      .studio-workspace { grid-template-columns: 240px 1fr 270px; }
+      .brand-title { font-size: 12px; }
+    }
+    @media (max-width: 840px) {
+      html, body { overflow: auto; height: auto; }
+      .studio-workspace { grid-template-columns: 1fr; height: auto; overflow: visible; }
+      .sidebar { height: 420px; border: none; border-bottom: 1px solid var(--border); }
+      .canvas-stage-wrapper { min-height: 65vh; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP STUDIO TOOLBAR -->
+  <header class="studio-header">
+    <div class="brand-box">
+      <div class="brand-logo">SB</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:7px;">
+          <span class="brand-title">SOLU WEBSITE BUILDER PRO</span>
+          <span class="brand-badge">100% OFFLINE</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Responsive Viewport Switcher -->
+    <div class="toolbar-group">
+      <button class="btn btn-icon active" id="vpBtn-desktop" onclick="setViewport('desktop')" title="Desktop View (100%)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        <span>Desktop</span>
+      </button>
+      <button class="btn btn-icon" id="vpBtn-tablet" onclick="setViewport('tablet')" title="Tablet View (768px)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        <span>Tablet</span>
+      </button>
+      <button class="btn btn-icon" id="vpBtn-mobile" onclick="setViewport('mobile')" title="Mobile View (375px)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        <span>Mobile</span>
+      </button>
+    </div>
+
+    <!-- History, Templates, Preview & Export -->
+    <div class="toolbar-group" style="overflow-x:auto;">
+      <button class="btn btn-icon" id="btnUndo" onclick="undoAction()" title="Undo (Ctrl+Z)" disabled>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+      </button>
+      <button class="btn btn-icon" id="btnRedo" onclick="redoAction()" title="Redo (Ctrl+Y)" disabled>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg>
+      </button>
+
+      <div class="toolbar-divider"></div>
+
+      <select id="starterTemplateSelect" class="studio-select" onchange="handleTemplateDropdown(this)" title="Load Starter Website Template">
+        <option value="">✨ Starter Templates...</option>
+        <option value="saas">🚀 SaaS Product Landing Page</option>
+        <option value="shop">🏪 Local Shop / CSC Digital Center</option>
+        <option value="portfolio">🎨 Creative Agency / Portfolio</option>
+        <option value="blank">📄 Blank Empty Canvas</option>
+      </select>
+
+      <button class="btn btn-danger" onclick="clearCanvasConfirm()" title="Clear Entire Canvas">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        <span>Clear</span>
+      </button>
+
+      <div class="toolbar-divider"></div>
+
+      <button class="btn" onclick="exportProjectJSON()" title="Save Project File (.json)">💾 Save JSON</button>
+      <label class="btn" title="Load Project File (.json)" style="margin:0;">
+        📂 Load JSON
+        <input type="file" accept=".json" style="display:none;" onchange="importProjectJSON(event)" />
+      </label>
+
+      <button class="btn" onclick="openSourceModal()" title="View Clean Generated HTML/CSS Code">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        <span>Code</span>
+      </button>
+
+      <button class="btn btn-primary" onclick="openLivePreview()" title="Full-Screen Interactive Live Preview">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <span>Preview</span>
+      </button>
+
+      <button class="btn btn-success" onclick="exportStandaloneHTML()" title="Download Standalone Production .HTML File">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Export .HTML</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN 3-COLUMN WORKSPACE -->
+  <div class="studio-workspace">
+
+    <!-- LEFT SIDEBAR: ELEMENTS, SECTIONS & LAYERS -->
+    <aside class="sidebar sidebar-left">
+      <div class="tabs-bar">
+        <button class="tab-btn active" id="leftTab-elements" onclick="switchLeftTab('elements')">Elements</button>
+        <button class="tab-btn" id="leftTab-sections" onclick="switchLeftTab('sections')">Sections (12)</button>
+        <button class="tab-btn" id="leftTab-layers" onclick="switchLeftTab('layers')">Layers</button>
+      </div>
+
+      <!-- Tab 1: Basic Draggable Elements -->
+      <div class="sidebar-scroll" id="leftPane-elements">
+        <div class="palette-section-title">Typography & Actions (Drag or Click)</div>
+        <div class="palette-grid" id="basicElementsGrid"></div>
+
+        <div class="palette-section-title" style="margin-top:16px;">Layout Grids & Advanced</div>
+        <div class="palette-grid" id="layoutElementsGrid"></div>
+      </div>
+
+      <!-- Tab 2: Pre-Built Website Sections -->
+      <div class="sidebar-scroll" id="leftPane-sections" style="display:none;">
+        <div class="palette-section-title">Drag or Click to Append Section</div>
+        <div id="prebuiltSectionsList"></div>
+      </div>
+
+      <!-- Tab 3: Hierarchical Page Layers Tree -->
+      <div class="sidebar-scroll" id="leftPane-layers" style="display:none;">
+        <div class="palette-section-title">Page Structure & Navigator</div>
+        <div id="layersTreeContainer"></div>
+      </div>
+    </aside>
+
+    <!-- CENTER VISUAL DRAG & DROP CANVAS STAGE -->
+    <main class="canvas-stage-wrapper" id="canvasStageWrapper" onclick="handleStageBackgroundClick(event)">
+      <div class="canvas-frame" id="canvasFrame">
+        <!-- Rendered dynamically by JS -->
+      </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR: LIVE PROPERTY & STYLE INSPECTOR -->
+    <aside class="sidebar sidebar-right">
+      <div class="tabs-bar">
+        <button class="tab-btn active" id="rightTab-content" onclick="switchRightTab('content')">Content</button>
+        <button class="tab-btn" id="rightTab-style" onclick="switchRightTab('style')">Style & Text</button>
+        <button class="tab-btn" id="rightTab-box" onclick="switchRightTab('box')">Box & Effects</button>
+      </div>
+
+      <div class="sidebar-scroll" id="inspectorContainer">
+        <!-- Dynamically rendered inspector controls -->
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- LIVE PREVIEW OVERLAY MODAL -->
+  <div class="modal-overlay" id="livePreviewModal">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-weight:800;font-size:13px;color:#34d399;">● LIVE INTERACTIVE PREVIEW</span>
+        <span style="font-size:11px;color:var(--text-muted);">Clean production output without builder outlines</span>
+      </div>
+      <div class="toolbar-group">
+        <button class="btn" onclick="setPreviewFrameWidth('100%')">Desktop</button>
+        <button class="btn" onclick="setPreviewFrameWidth('768px')">Tablet</button>
+        <button class="btn" onclick="setPreviewFrameWidth('375px')">Mobile</button>
+        <button class="btn btn-success" onclick="exportStandaloneHTML()">⬇️ Export .HTML</button>
+        <button class="btn btn-danger" onclick="closeLivePreview()">✕ Close</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <iframe id="livePreviewIframe" class="preview-iframe" title="Live Website Preview"></iframe>
+    </div>
+  </div>
+
+  <!-- GENERATED SOURCE CODE MODAL -->
+  <div class="modal-overlay" id="sourceCodeModal">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-weight:800;font-size:13px;color:#818cf8;">&lt;/&gt; GENERATED CLEAN HTML/CSS SOURCE</span>
+      </div>
+      <div class="toolbar-group">
+        <button class="btn btn-primary" onclick="copyGeneratedCode()">📋 Copy Full HTML</button>
+        <button class="btn btn-success" onclick="exportStandaloneHTML()">⬇️ Download .HTML</button>
+        <button class="btn btn-danger" onclick="closeSourceModal()">✕ Close</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <pre class="code-viewer-box" id="generatedCodeOutput"></pre>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" id="studioToast">Ready</div>
+
+  <script>
+    /*************************************************************************
+     * 1. DATA MODEL, DEFAULT STYLES & INLINE SVG PALETTE DEFINITIONS
+     *************************************************************************/
+    const STORAGE_KEY = 'solu_website_builder_pro_v1';
+
+    const SHADOW_PRESETS = {
+      none: 'none',
+      soft: '0 4px 14px rgba(15, 23, 42, 0.08)',
+      medium: '0 10px 28px rgba(15, 23, 42, 0.14)',
+      elevated: '0 22px 50px rgba(15, 23, 42, 0.22)',
+      glow: '0 10px 32px rgba(99, 102, 241, 0.35)'
+    };
+
+    const FONT_FAMILIES = [
+      { label: 'System Sans (Inter/Segoe)', value: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif' },
+      { label: 'Editorial Serif (Georgia)', value: 'Georgia, "Times New Roman", Times, serif' },
+      { label: 'Geometric Modern (Trebuchet)', value: '"Trebuchet MS", "Lucida Grande", sans-serif' },
+      { label: 'Classic Humanist (Verdana)', value: 'Verdana, Geneva, Tahoma, sans-serif' },
+      { label: 'Code Monospace (Consolas)', value: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace' }
+    ];
+
+    const BASIC_ELEMENTS = [
+      { type: 'heading', group: 'basic', label: 'Heading', svg: '<path d="M6 4v16M18 4v16M6 12h12"/>' },
+      { type: 'paragraph', group: 'basic', label: 'Paragraph', svg: '<line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="14" y2="18"/>' },
+      { type: 'button', group: 'basic', label: 'Action Button', svg: '<rect x="3" y="7" width="18" height="10" rx="4"/><line x1="8" y1="12" x2="16" y2="12"/>' },
+      { type: 'image', group: 'basic', label: 'Image Box', svg: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>' },
+      { type: 'video', group: 'basic', label: 'Video Embed', svg: '<rect x="2" y="4" width="20" height="16" rx="2"/><polygon points="10 9 16 12 10 15 10 9"/>' },
+      { type: 'badge', group: 'basic', label: 'Icon Badge', svg: '<circle cx="12" cy="8" r="5"/><path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12"/>' },
+      { type: 'divider', group: 'basic', label: 'Divider Line', svg: '<line x1="3" y1="12" x2="21" y2="12"/>' },
+      { type: 'spacer', group: 'basic', label: 'Spacer', svg: '<path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/>' },
+      { type: 'grid2', group: 'layout', label: '2-Column Grid', svg: '<rect x="3" y="4" width="7" height="16" rx="1.5"/><rect x="14" y="4" width="7" height="16" rx="1.5"/>' },
+      { type: 'grid3', group: 'layout', label: '3-Column Grid', svg: '<rect x="2" y="4" width="5" height="16" rx="1"/><rect x="9.5" y="4" width="5" height="16" rx="1"/><rect x="17" y="4" width="5" height="16" rx="1"/>' },
+      { type: 'card', group: 'layout', label: 'Feature Card', svg: '<rect x="4" y="3" width="16" height="18" rx="2.5"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="16" y2="12"/>' },
+      { type: 'form', group: 'layout', label: 'Contact Form', svg: '<rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="14" x2="13" y2="14"/>' },
+      { type: 'html', group: 'layout', label: 'Custom HTML', svg: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>' }
+    ];
+
+    const PREBUILT_SECTIONS = [
+      { id: 'navbar', title: 'Sticky Top Navbar', desc: 'Brand + Nav Links + CTA Button', svg: '<rect x="2" y="4" width="20" height="5" rx="1"/><line x1="5" y1="6.5" x2="9" y2="6.5"/>' },
+      { id: 'hero_split', title: 'Split Hero Banner', desc: 'Headline, CTA & Showcase Visual', svg: '<rect x="2" y="4" width="9" height="16" rx="1.5"/><rect x="13" y="4" width="9" height="16" rx="1.5"/>' },
+      { id: 'hero_gradient', title: 'Gradient Center Hero', desc: 'Full-width bold gradient hero', svg: '<rect x="2" y="3" width="20" height="18" rx="2"/><line x1="7" y1="10" x2="17" y2="10"/>' },
+      { id: 'features_3', title: '3-Column Features', desc: '3 structured feature cards', svg: '<rect x="2" y="5" width="5" height="14" rx="1"/><rect x="9.5" y="5" width="5" height="14" rx="1"/><rect x="17" y="5" width="5" height="14" rx="1"/>' },
+      { id: 'about_split', title: 'About Us Split', desc: 'Story & mission with image', svg: '<circle cx="7" cy="12" r="4"/><line x1="14" y1="9" x2="21" y2="9"/><line x1="14" y1="14" x2="20" y2="14"/>' },
+      { id: 'pricing_3', title: '3-Tier Pricing Table', desc: 'Starter, Pro & Enterprise plans', svg: '<rect x="2" y="4" width="5.5" height="16" rx="1"/><rect x="9.25" y="3" width="5.5" height="18" rx="1"/><rect x="16.5" y="4" width="5.5" height="16" rx="1"/>' },
+      { id: 'gallery_3', title: 'Photo Showcase Grid', desc: '3-column visual gallery', svg: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>' },
+      { id: 'testimonials', title: 'Client Testimonials', desc: 'Customer reviews & ratings', svg: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>' },
+      { id: 'faq', title: 'FAQ Accordion Block', desc: 'Interactive expandable Q&As', svg: '<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>' },
+      { id: 'cta_banner', title: 'Call-To-Action Banner', desc: 'High-conversion promo strip', svg: '<rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="12" x2="13" y2="12"/>' },
+      { id: 'contact_sec', title: 'Contact Us Section', desc: 'Address info + working form', svg: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>' },
+      { id: 'footer', title: 'Multi-Column Footer', desc: 'Brand, links & copyright bar', svg: '<rect x="2" y="13" width="20" height="8" rx="1"/>' }
+    ];
+
+    // Generate clean inline SVG Data URI placeholder images (100% offline, never broken)
+    function makePlaceholderSVGDataURI(title, bg1 = '#4f46e5', bg2 = '#0ea5e9', w = 800, h = 500) {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${bg1}"/><stop offset="100%" stop-color="${bg2}"/></linearGradient></defs>
+        <rect width="${w}" height="${h}" fill="url(#g)"/>
+        <circle cx="${w * 0.82}" cy="${h * 0.22}" r="${h * 0.28}" fill="rgba(255,255,255,0.1)"/>
+        <circle cx="${w * 0.18}" cy="${h * 0.85}" r="${h * 0.35}" fill="rgba(255,255,255,0.08)"/>
+        <rect x="${w * 0.12}" y="${h * 0.25}" width="${w * 0.76}" height="${h * 0.5}" rx="18" fill="rgba(15,23,42,0.28)" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-weight="800" font-size="${Math.round(w * 0.042)}">${title}</text>
+      </svg>`;
+      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+    }
+
+    function uid(prefix = 'node') {
+      return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+    }
+
+    function defaultStyle(overrides = {}) {
+      return Object.assign({
+        fontFamily: FONT_FAMILIES[0].value,
+        fontSize: '',
+        fontWeight: '',
+        textAlign: '',
+        lineHeight: '1.55',
+        letterSpacing: '0',
+        color: '',
+        backgroundColor: 'transparent',
+        useGradient: false,
+        gradColor1: '#4f46e5',
+        gradColor2: '#06b6d4',
+        gradAngle: 135,
+        bgImage: '',
+        paddingTop: 0,
+        paddingBottom: 0,
+        paddingLeft: 0,
+        paddingRight: 0,
+        marginTop: 0,
+        marginBottom: 0,
+        width: '100%',
+        maxWidth: '',
+        borderWidth: 0,
+        borderStyle: 'solid',
+        borderColor: '#cbd5e1',
+        borderRadius: 0,
+        shadow: 'none',
+        opacity: 100
+      }, overrides);
+    }
+
+    function createBlockNode(type, customProps = {}, customStyle = {}) {
+      const base = { id: uid('blk'), type, props: {}, style: defaultStyle(customStyle) };
+      switch (type) {
+        case 'heading':
+          base.props = Object.assign({ tag: 'h2', text: 'Build Stunning Websites Visually' }, customProps);
+          base.style = defaultStyle(Object.assign({ fontSize: 34, fontWeight: '800', lineHeight: '1.2', marginBottom: 12 }, customStyle));
+          break;
+        case 'paragraph':
+          base.props = Object.assign({ text: 'Drag and drop elements, customize every color, font, spacing, and export clean standalone HTML in a single click.' }, customProps);
+          base.style = defaultStyle(Object.assign({ fontSize: 16, fontWeight: '400', lineHeight: '1.65', marginBottom: 16 }, customStyle));
+          break;
+        case 'button':
+          base.props = Object.assign({ label: 'Get Started Now →', href: '#contact', target: '_self' }, customProps);
+          base.style = defaultStyle(Object.assign({
+            fontSize: 15, fontWeight: '700', color: '#ffffff', backgroundColor: '#4f46e5',
+            paddingTop: 12, paddingBottom: 12, paddingLeft: 24, paddingRight: 24,
+            borderRadius: 8, width: 'auto', shadow: 'soft', marginBottom: 8
+          }, customStyle));
+          break;
+        case 'image':
+          base.props = Object.assign({
+            src: makePlaceholderSVGDataURI('SOLU STUDIO SHOWCASE', '#4f46e5', '#06b6d4', 800, 480),
+            alt: 'Showcase Graphic',
+            height: 280,
+            objectFit: 'cover'
+          }, customProps);
+          base.style = defaultStyle(Object.assign({ borderRadius: 12, shadow: 'medium', marginBottom: 12 }, customStyle));
+          break;
+        case 'video':
+          base.props = Object.assign({
+            url: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+            height: 320
+          }, customProps);
+          base.style = defaultStyle(Object.assign({ borderRadius: 12, shadow: 'medium', marginBottom: 14 }, customStyle));
+          break;
+        case 'badge':
+          base.props = Object.assign({ icon: '★', text: '100% OFFLINE STUDIO' }, customProps);
+          base.style = defaultStyle(Object.assign({
+            fontSize: 12, fontWeight: '800', color: '#4f46e5', backgroundColor: '#eef2ff',
+            paddingTop: 6, paddingBottom: 6, paddingLeft: 14, paddingRight: 14,
+            borderRadius: 99, width: 'auto', marginBottom: 12
+          }, customStyle));
+          break;
+        case 'divider':
+          base.props = Object.assign({ thickness: 2, lineColor: '#e2e8f0' }, customProps);
+          base.style = defaultStyle(Object.assign({ marginTop: 16, marginBottom: 16 }, customStyle));
+          break;
+        case 'spacer':
+          base.props = Object.assign({ height: 36 }, customProps);
+          break;
+        case 'grid2':
+          base.props = Object.assign({ gap: 24 }, customProps);
+          base.columns = customProps.columns || [[], []];
+          base.style = defaultStyle(Object.assign({ marginTop: 8, marginBottom: 12 }, customStyle));
+          break;
+        case 'grid3':
+          base.props = Object.assign({ gap: 20 }, customProps);
+          base.columns = customProps.columns || [[], [], []];
+          base.style = defaultStyle(Object.assign({ marginTop: 8, marginBottom: 12 }, customStyle));
+          break;
+        case 'card':
+          base.props = Object.assign({
+            icon: '⚡',
+            title: 'Lightning Fast Performance',
+            body: 'Clean semantic HTML & CSS output with zero bloated libraries or slow external scripts.',
+            btnText: 'Learn More',
+            btnHref: '#'
+          }, customProps);
+          base.style = defaultStyle(Object.assign({
+            backgroundColor: '#ffffff', color: '#0f172a',
+            paddingTop: 24, paddingBottom: 24, paddingLeft: 22, paddingRight: 22,
+            borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 14, shadow: 'soft'
+          }, customStyle));
+          break;
+        case 'form':
+          base.props = Object.assign({
+            title: 'Send Us a Message',
+            namePlaceholder: 'Your Full Name',
+            emailPlaceholder: 'Your Email Address',
+            msgPlaceholder: 'How can we help you?',
+            submitLabel: 'Submit Message',
+            successMsg: 'Thank you! Your message has been received.'
+          }, customProps);
+          base.style = defaultStyle(Object.assign({
+            backgroundColor: '#ffffff', color: '#0f172a',
+            paddingTop: 26, paddingBottom: 26, paddingLeft: 24, paddingRight: 24,
+            borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 14, shadow: 'medium'
+          }, customStyle));
+          break;
+        case 'html':
+          base.props = Object.assign({
+            code: '<div style="padding:18px;border-radius:10px;background:#f1f5f9;border:1px dashed #6366f1;text-align:center;font-weight:700;color:#334155;">Custom HTML / Widget Embed Block — Edit code in Right Inspector</div>'
+          }, customProps);
+          break;
+      }
+      return base;
+    }
+
+    function createSectionNode(presetId) {
+      const sec = {
+        id: uid('sec'),
+        name: 'Custom Section',
+        style: defaultStyle({
+          backgroundColor: '#ffffff',
+          color: '#0f172a',
+          paddingTop: 64,
+          paddingBottom: 64,
+          paddingLeft: 24,
+          paddingRight: 24,
+          maxWidth: '1160px'
+        }),
+        blocks: []
+      };
+
+      switch (presetId) {
+        case 'navbar': {
+          sec.name = 'Sticky Navbar';
+          sec.style = defaultStyle({
+            backgroundColor: '#0f172a', color: '#ffffff',
+            paddingTop: 14, paddingBottom: 14, paddingLeft: 24, paddingRight: 24, maxWidth: '1200px'
+          });
+          sec.blocks = [
+            createBlockNode('html', {
+              code: `<nav style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;">
+  <a href="#" style="font-size:20px;font-weight:900;color:#ffffff;text-decoration:none;letter-spacing:0.4px;">SOLU<span style="color:#818cf8;">STUDIO</span></a>
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:22px;font-size:14px;font-weight:600;">
+    <a href="#features" style="color:#cbd5e1;text-decoration:none;">Features</a>
+    <a href="#about" style="color:#cbd5e1;text-decoration:none;">About</a>
+    <a href="#pricing" style="color:#cbd5e1;text-decoration:none;">Pricing</a>
+    <a href="#contact" style="background:#6366f1;color:#fff;padding:8px 18px;border-radius:8px;text-decoration:none;font-weight:700;">Get Started</a>
+  </div>
+</nav>`
+            })
+          ];
+          break;
+        }
+        case 'hero_split': {
+          sec.name = 'Split Hero Banner';
+          sec.style = defaultStyle({
+            backgroundColor: '#f8fafc', color: '#0f172a',
+            paddingTop: 72, paddingBottom: 72, paddingLeft: 24, paddingRight: 24, maxWidth: '1160px'
+          });
+          const g2 = createBlockNode('grid2', { gap: 36 });
+          g2.columns[0] = [
+            createBlockNode('badge', { icon: '🚀', text: 'NEXT-GEN DIGITAL PLATFORM' }),
+            createBlockNode('heading', { tag: 'h1', text: 'Launch Your Dream Website Without Writing Code' }, { fontSize: 44, marginBottom: 16 }),
+            createBlockNode('paragraph', { text: 'Craft responsive, lightning-fast pages with our visual drag-and-drop engine. Customize typography, colors, grids, and export production HTML in seconds.' }, { fontSize: 17, color: '#475569', marginBottom: 24 }),
+            createBlockNode('button', { label: 'Start Building Free →', href: '#pricing' }, { paddingTop: 14, paddingBottom: 14, paddingLeft: 28, paddingRight: 28 })
+          ];
+          g2.columns[1] = [
+            createBlockNode('image', {
+              src: makePlaceholderSVGDataURI('MODERN WEB EXPERIENCE', '#4f46e5', '#ec4899', 800, 540),
+              height: 360
+            }, { borderRadius: 16, shadow: 'elevated' })
+          ];
+          sec.blocks = [g2];
+          break;
+        }
+        case 'hero_gradient': {
+          sec.name = 'Gradient Center Hero';
+          sec.style = defaultStyle({
+            useGradient: true, gradColor1: '#1e1b4b', gradColor2: '#4f46e5', gradAngle: 135,
+            color: '#ffffff', textAlign: 'center',
+            paddingTop: 92, paddingBottom: 92, paddingLeft: 24, paddingRight: 24, maxWidth: '900px'
+          });
+          sec.blocks = [
+            createBlockNode('badge', { icon: '✨', text: 'SOLU DIGITAL ECOSYSTEM' }, { backgroundColor: 'rgba(255,255,255,0.15)', color: '#fde047', textAlign: 'center' }),
+            createBlockNode('heading', { tag: 'h1', text: 'Design, Customize & Export Complete Websites Offline' }, { fontSize: 48, color: '#ffffff', textAlign: 'center', marginBottom: 18 }),
+            createBlockNode('paragraph', { text: 'Everything you need to build landing pages, local shop portals, and portfolios with zero external dependencies.' }, { fontSize: 18, color: '#e0e7ff', textAlign: 'center', marginBottom: 28 }),
+            createBlockNode('button', { label: 'Explore Solutions', href: '#features' }, { backgroundColor: '#f59e0b', color: '#0f172a', paddingTop: 14, paddingBottom: 14, paddingLeft: 30, paddingRight: 30, textAlign: 'center' })
+          ];
+          break;
+        }
+        case 'features_3': {
+          sec.name = '3-Column Features';
+          sec.style = defaultStyle({ backgroundColor: '#ffffff', color: '#0f172a', paddingTop: 72, paddingBottom: 72, paddingLeft: 24, paddingRight: 24, maxWidth: '1160px' });
+          const g3 = createBlockNode('grid3', { gap: 24 });
+          g3.columns[0] = [createBlockNode('card', { icon: '🎨', title: 'Visual Drag & Drop', body: 'Reorder sections, nest elements inside columns, and edit text inline right on the stage.', btnText: 'Try Editor →' })];
+          g3.columns[1] = [createBlockNode('card', { icon: '📱', title: '100% Mobile Responsive', body: 'Preview and fine-tune your layout across Desktop, Tablet, and Mobile viewports.', btnText: 'View Demo →' })];
+          g3.columns[2] = [createBlockNode('card', { icon: '📦', title: '1-Click Clean Export', body: 'Download a self-contained production HTML file with embedded images ready for hosting.', btnText: 'Export Now →' })];
+          sec.blocks = [
+            createBlockNode('heading', { tag: 'h2', text: 'Powerful Features Built for Speed' }, { textAlign: 'center', fontSize: 34, marginBottom: 8 }),
+            createBlockNode('paragraph', { text: 'Every tool you need to craft professional web pages in minutes.' }, { textAlign: 'center', color: '#64748b', marginBottom: 34 }),
+            g3
+          ];
+          break;
+        }
+        case 'about_split': {
+          sec.name = 'About Us Split';
+          sec.style = defaultStyle({ backgroundColor: '#f8fafc', color: '#0f172a', paddingTop: 72, paddingBottom: 72, paddingLeft: 24, paddingRight: 24, maxWidth: '1160px' });
+          const g2 = createBlockNode('grid2', { gap: 36 });
+          g2.columns[0] = [
+            createBlockNode('image', { src: makePlaceholderSVGDataURI('OUR STORY & MISSION', '#059669', '#0284c7', 800, 520), height: 320 }, { borderRadius: 14 })
+          ];
+          g2.columns[1] = [
+            createBlockNode('badge', { icon: '🏢', text: 'ABOUT OUR COMPANY' }),
+            createBlockNode('heading', { tag: 'h2', text: 'Empowering Businesses With Smart Digital Tools' }, { fontSize: 32 }),
+            createBlockNode('paragraph', { text: 'We specialize in building ultra-fast, offline-first software and websites that help entrepreneurs, shops, and creators grow without technical headaches.' }, { color: '#475569' }),
+            createBlockNode('button', { label: 'Contact Our Team', href: '#contact' })
+          ];
+          sec.blocks = [g2];
+          break;
+        }
+        case 'pricing_3': {
+          sec.name = '3-Tier Pricing Table';
+          sec.style = defaultStyle({ backgroundColor: '#ffffff', color: '#0f172a', paddingTop: 72, paddingBottom: 72, paddingLeft: 24, paddingRight: 24, maxWidth: '1160px' });
+          const g3 = createBlockNode('grid3', { gap: 24 });
+          g3.columns[0] = [createBlockNode('card', { icon: '🌱', title: 'Starter — ₹499/mo', body: '• 1 Custom Website\n• Mobile Responsive Design\n• Free SSL & Basic Support', btnText: 'Choose Starter' })];
+          g3.columns[1] = [createBlockNode('card', { icon: '🔥', title: 'Pro Studio — ₹999/mo', body: '• Unlimited Pages & Grids\n• Custom Domain & SEO\n• Priority WhatsApp Support', btnText: 'Choose Pro' }, { borderColor: '#6366f1', borderWidth: 2, shadow: 'glow' })];
+          g3.columns[2] = [createBlockNode('card', { icon: '👑', title: 'Enterprise — ₹2,499/mo', body: '• Full Custom Branding\n• Dedicated Cloud Hosting\n• 24/7 VIP Technical Manager', btnText: 'Contact Sales' })];
+          sec.blocks = [
+            createBlockNode('heading', { tag: 'h2', text: 'Simple, Transparent Pricing' }, { textAlign: 'center', fontSize: 34 }),
+            createBlockNode('paragraph', { text: 'Start small and upgrade anytime as your business scales.' }, { textAlign: 'center', color: '#64748b', marginBottom: 32 }),
+            g3
+          ];
+          break;
+        }
+        case 'gallery_3': {
+          sec.name = 'Photo Showcase Grid';
+          sec.style = defaultStyle({ backgroundColor: '#f8fafc', color: '#0f172a', paddingTop: 68, paddingBottom: 68, paddingLeft: 24, paddingRight: 24, maxWidth: '1160px' });
+          const g3 = createBlockNode('grid3', { gap: 18 });
+          g3.columns[0] = [createBlockNode('image', { src: makePlaceholderSVGDataURI('PROJECT ALPHA', '#6366f1', '#8b5cf6', 600, 420), height: 220 })];
+          g3.columns[1] = [createBlockNode('image', { src: makePlaceholderSVGDataURI('PROJECT BETA', '#0284c7', '#10b981', 600, 420), height: 220 })];
+          g3.columns[2] = [createBlockNode('image', { src: makePlaceholderSVGDataURI('PROJECT GAMMA', '#d97706', '#ef4444', 600, 420), height: 220 })];
+          sec.blocks = [
+            createBlockNode('heading', { tag: 'h2', text: 'Our Recent Work & Gallery' }, { textAlign: 'center', marginBottom: 28 }),
+            g3
+          ];
+          break;
+        }
+        case 'testimonials': {
+          sec.name = 'Customer Testimonials';
+          sec.style = defaultStyle({ backgroundColor: '#ffffff', color: '#0f172a', paddingTop: 68, paddingBottom: 68, paddingLeft: 24, paddingRight: 24, maxWidth: '1160px' });
+          const g2 = createBlockNode('grid2', { gap: 24 });
+          g2.columns[0] = [createBlockNode('card', { icon: '⭐⭐⭐⭐⭐', title: 'Rohan Sharma — Business Owner', body: '"SOLU Website Builder helped us launch our shop website in 15 minutes with zero coding knowledge!"', btnText: 'Verified Client' })];
+          g2.columns[1] = [createBlockNode('card', { icon: '⭐⭐⭐⭐⭐', title: 'Priya Nair — Freelance Designer', body: '"The live style inspector and clean single-file HTML export save me hours on every client project."', btnText: 'Verified Client' })];
+          sec.blocks = [
+            createBlockNode('heading', { tag: 'h2', text: 'Loved by Creators & Businesses' }, { textAlign: 'center', marginBottom: 28 }),
+            g2
+          ];
+          break;
+        }
+        case 'faq': {
+          sec.name = 'FAQ Accordion';
+          sec.style = defaultStyle({ backgroundColor: '#f8fafc', color: '#0f172a', paddingTop: 64, paddingBottom: 64, paddingLeft: 24, paddingRight: 24, maxWidth: '880px' });
+          sec.blocks = [
+            createBlockNode('heading', { tag: 'h2', text: 'Frequently Asked Questions' }, { textAlign: 'center', marginBottom: 24 }),
+            createBlockNode('html', {
+              code: `<div style="display:flex;flex-direction:column;gap:12px;">
+  <details open style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;">
+    <summary style="font-weight:700;font-size:15px;cursor:pointer;">Does the exported website work without internet or backend servers?</summary>
+    <p style="margin-top:10px;color:#475569;font-size:14px;line-height:1.6;">Yes! Every exported HTML file is 100% self-contained with embedded styles and Base64 images so it runs anywhere.</p>
+  </details>
+  <details style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px;">
+    <summary style="font-weight:700;font-size:15px;cursor:pointer;">Can I edit text directly on the canvas?</summary>
+    <p style="margin-top:10px;color:#475569;font-size:14px;line-height:1.6;">Simply double-click any heading, paragraph, or button on the canvas to type inline, or use the Right Inspector panel.</p>
+  </details>
+</div>`
+            })
+          ];
+          break;
+        }
+        case 'cta_banner': {
+          sec.name = 'Call-To-Action Banner';
+          sec.style = defaultStyle({
+            useGradient: true, gradColor1: '#4f46e5', gradColor2: '#7c3aed', gradAngle: 90,
+            color: '#ffffff', textAlign: 'center', paddingTop: 56, paddingBottom: 56, paddingLeft: 24, paddingRight: 24, maxWidth: '960px'
+          });
+          sec.blocks = [
+            createBlockNode('heading', { tag: 'h2', text: 'Ready to Publish Your Website Today?' }, { color: '#ffffff', textAlign: 'center', fontSize: 34 }),
+            createBlockNode('paragraph', { text: 'Export clean HTML or save your JSON project to continue editing anytime.' }, { color: '#e0e7ff', textAlign: 'center', marginBottom: 22 }),
+            createBlockNode('button', { label: 'Get Started Now →', href: '#contact' }, { backgroundColor: '#ffffff', color: '#4f46e5', textAlign: 'center' })
+          ];
+          break;
+        }
+        case 'contact_sec': {
+          sec.name = 'Contact Us Section';
+          sec.style = defaultStyle({ backgroundColor: '#ffffff', color: '#0f172a', paddingTop: 72, paddingBottom: 72, paddingLeft: 24, paddingRight: 24, maxWidth: '1100px' });
+          const g2 = createBlockNode('grid2', { gap: 32 });
+          g2.columns[0] = [
+            createBlockNode('badge', { icon: '📍', text: 'GET IN TOUCH' }),
+            createBlockNode('heading', { tag: 'h2', text: 'Let’s Discuss Your Next Project' }, { fontSize: 32 }),
+            createBlockNode('paragraph', { text: 'Have questions or need custom digital solutions? Fill out the form or visit our office.' }, { color: '#475569' }),
+            createBlockNode('card', { icon: '📞', title: 'Direct Helpline & Office', body: 'Phone: +91 98765 43210\nEmail: hello@soludigital.in\nAddress: Tech Park, Sector 62, Noida', btnText: 'Call Now' })
+          ];
+          g2.columns[1] = [createBlockNode('form', {})];
+          sec.blocks = [g2];
+          break;
+        }
+        case 'footer': {
+          sec.name = 'Multi-Column Footer';
+          sec.style = defaultStyle({
+            backgroundColor: '#0f172a', color: '#94a3b8',
+            paddingTop: 48, paddingBottom: 36, paddingLeft: 24, paddingRight: 24, maxWidth: '1160px'
+          });
+          sec.blocks = [
+            createBlockNode('html', {
+              code: `<footer style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;border-top:1px solid #1e293b;padding-top:24px;">
+  <div>
+    <div style="font-size:18px;font-weight:900;color:#ffffff;">SOLU<span style="color:#818cf8;">STUDIO</span></div>
+    <p style="font-size:13px;color:#94a3b8;margin-top:4px;">Built with SOLU Website Builder Pro • 100% Offline Studio</p>
+  </div>
+  <div style="font-size:13px;color:#64748b;">© 2026 SOLU Digital Tools. All Rights Reserved.</div>
+</footer>`
+            })
+          ];
+          break;
+        }
+      }
+      return sec;
+    }
+
+    /*************************************************************************
+     * 2. BUILDER APPLICATION STATE, UNDO/REDO HISTORY & LOCALSTORAGE
+     *************************************************************************/
+    const state = {
+      sections: [],
+      selectedId: null,
+      viewport: 'desktop',
+      leftTab: 'elements',
+      rightTab: 'content',
+      history: [],
+      historyIndex: -1,
+      dragPayload: null
+    };
+
+    function snapshotState(pushHistory = true) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.sections));
+      } catch (e) {}
+
+      if (pushHistory) {
+        const serialized = JSON.stringify(state.sections);
+        if (state.historyIndex >= 0 && state.history[state.historyIndex] === serialized) return;
+        state.history = state.history.slice(0, state.historyIndex + 1);
+        state.history.push(serialized);
+        if (state.history.length > 40) state.history.shift();
+        state.historyIndex = state.history.length - 1;
+      }
+      updateHistoryButtons();
+    }
+
+    function updateHistoryButtons() {
+      document.getElementById('btnUndo').disabled = state.historyIndex <= 0;
+      document.getElementById('btnRedo').disabled = state.historyIndex >= state.history.length - 1;
+    }
+
+    function undoAction() {
+      if (state.historyIndex <= 0) return;
+      state.historyIndex--;
+      state.sections = JSON.parse(state.history[state.historyIndex]);
+      state.selectedId = null;
+      renderAll();
+      updateHistoryButtons();
+      showToast('↩️ Undid last change');
+    }
+
+    function redoAction() {
+      if (state.historyIndex >= state.history.length - 1) return;
+      state.historyIndex++;
+      state.sections = JSON.parse(state.history[state.historyIndex]);
+      state.selectedId = null;
+      renderAll();
+      updateHistoryButtons();
+      showToast('↪️ Redid change');
+    }
+
+    /*************************************************************************
+     * 3. RECURSIVE TREE FINDERS & MUTATION HELPERS
+     *************************************************************************/
+    function findNodeById(id, list = state.sections, parentInfo = null) {
+      if (!id) return null;
+      for (let i = 0; i < list.length; i++) {
+        const node = list[i];
+        if (node.id === id) {
+          return { node, parentList: list, index: i, parentInfo };
+        }
+        if (node.blocks && Array.isArray(node.blocks)) {
+          const found = findNodeById(id, node.blocks, { type: 'section', parent: node });
+          if (found) return found;
+        }
+        if (node.columns && Array.isArray(node.columns)) {
+          for (let c = 0; c < node.columns.length; c++) {
+            const found = findNodeById(id, node.columns[c], { type: 'column', parent: node, colIndex: c });
+            if (found) return found;
+          }
+        }
+      }
+      return null;
+    }
+
+    function cloneNodeDeep(node) {
+      const copy = JSON.parse(JSON.stringify(node));
+      function assignNewIds(n) {
+        n.id = uid(n.blocks ? 'sec' : 'blk');
+        if (n.blocks) n.blocks.forEach(assignNewIds);
+        if (n.columns) n.columns.forEach(col => col.forEach(assignNewIds));
+      }
+      assignNewIds(copy);
+      return copy;
+    }
+
+    function selectNode(id, e) {
+      if (e) e.stopPropagation();
+      state.selectedId = id;
+      renderCanvas();
+      renderLayersTree();
+      renderInspector();
+    }
+
+    function handleStageBackgroundClick(e) {
+      if (e.target.id === 'canvasStageWrapper') {
+        state.selectedId = null;
+        renderCanvas();
+        renderLayersTree();
+        renderInspector();
+      }
+    }
+
+    function moveNodeById(id, dir, e) {
+      if (e) e.stopPropagation();
+      const found = findNodeById(id);
+      if (!found) return;
+      const { parentList, index } = found;
+      const targetIdx = index + dir;
+      if (targetIdx < 0 || targetIdx >= parentList.length) return;
+      const [item] = parentList.splice(index, 1);
+      parentList.splice(targetIdx, 0, item);
+      snapshotState(true);
+      renderAll();
+    }
+
+    function duplicateNodeById(id, e) {
+      if (e) e.stopPropagation();
+      const found = findNodeById(id);
+      if (!found) return;
+      const copy = cloneNodeDeep(found.node);
+      found.parentList.splice(found.index + 1, 0, copy);
+      state.selectedId = copy.id;
+      snapshotState(true);
+      renderAll();
+      showToast('📋 Duplicated item');
+    }
+
+    function deleteNodeById(id, e) {
+      if (e) e.stopPropagation();
+      const found = findNodeById(id);
+      if (!found) return;
+      found.parentList.splice(found.index, 1);
+      if (state.selectedId === id) state.selectedId = null;
+      snapshotState(true);
+      renderAll();
+      showToast('🗑️ Deleted item');
+    }
+
+    /*************************************************************************
+     * 4. STYLE COMPILER (CONVERTS STYLE OBJECT TO CLEAN INLINE CSS)
+     *************************************************************************/
+    function styleObjToCSS(s, isSectionInner = false) {
+      if (!s) return '';
+      const rules = [];
+      if (s.fontFamily) rules.push(`font-family:${s.fontFamily}`);
+      if (s.fontSize) rules.push(`font-size:${s.fontSize}px`);
+      if (s.fontWeight) rules.push(`font-weight:${s.fontWeight}`);
+      if (s.textAlign) rules.push(`text-align:${s.textAlign}`);
+      if (s.lineHeight) rules.push(`line-height:${s.lineHeight}`);
+      if (s.letterSpacing && Number(s.letterSpacing) !== 0) rules.push(`letter-spacing:${s.letterSpacing}px`);
+      if (s.color) rules.push(`color:${s.color}`);
+
+      if (!isSectionInner) {
+        if (s.bgImage) {
+          rules.push(`background-image:url('${s.bgImage}');background-size:cover;background-position:center`);
+        } else if (s.useGradient) {
+          rules.push(`background:linear-gradient(${s.gradAngle || 135}deg, ${s.gradColor1 || '#4f46e5'}, ${s.gradColor2 || '#06b6d4'})`);
+        } else if (s.backgroundColor && s.backgroundColor !== 'transparent') {
+          rules.push(`background-color:${s.backgroundColor}`);
+        }
+      }
+
+      if (s.paddingTop) rules.push(`padding-top:${s.paddingTop}px`);
+      if (s.paddingBottom) rules.push(`padding-bottom:${s.paddingBottom}px`);
+      if (s.paddingLeft) rules.push(`padding-left:${s.paddingLeft}px`);
+      if (s.paddingRight) rules.push(`padding-right:${s.paddingRight}px`);
+      if (s.marginTop) rules.push(`margin-top:${s.marginTop}px`);
+      if (s.marginBottom) rules.push(`margin-bottom:${s.marginBottom}px`);
+
+      if (isSectionInner) {
+        if (s.maxWidth) rules.push(`max-width:${s.maxWidth};margin-left:auto;margin-right:auto;width:100%`);
+      } else {
+        if (s.width === 'auto') rules.push(`display:inline-block;width:auto`);
+        else if (s.width) rules.push(`width:${s.width}`);
+      }
+
+      if (Number(s.borderWidth) > 0) {
+        rules.push(`border:${s.borderWidth}px ${s.borderStyle || 'solid'} ${s.borderColor || '#cbd5e1'}`);
+      }
+      if (Number(s.borderRadius) > 0) rules.push(`border-radius:${s.borderRadius}px`);
+      if (s.shadow && s.shadow !== 'none' && SHADOW_PRESETS[s.shadow]) {
+        rules.push(`box-shadow:${SHADOW_PRESETS[s.shadow]}`);
+      }
+      if (s.opacity !== undefined && Number(s.opacity) < 100) {
+        rules.push(`opacity:${(Number(s.opacity) / 100).toFixed(2)}`);
+      }
+      return rules.join(';');
+    }
+
+    function escapeHTML(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    /*************************************************************************
+     * 5. DUAL RENDERER: EDITOR STAGE HTML vs CLEAN EXPORT HTML
+     *************************************************************************/
+    function buildToolbarHTML(node, label) {
+      return `
+        <div class="wb-floating-toolbar" onclick="event.stopPropagation()">
+          <span class="wb-node-tag">${escapeHTML(label)}</span>
+          <button class="wb-tool-btn" onclick="moveNodeById('${node.id}', -1, event)" title="Move Up">↑</button>
+          <button class="wb-tool-btn" onclick="moveNodeById('${node.id}', 1, event)" title="Move Down">↓</button>
+          <button class="wb-tool-btn" onclick="duplicateNodeById('${node.id}', event)" title="Duplicate">⧉</button>
+          <button class="wb-tool-btn" onclick="deleteNodeById('${node.id}', event)" title="Delete">✕</button>
+        </div>
+      `;
+    }
+
+    function renderBlockHTML(block, isExport = false) {
+      const isSelected = !isExport && state.selectedId === block.id;
+      const css = styleObjToCSS(block.style, false);
+      const p = block.props || {};
+      let inner = '';
+
+      switch (block.type) {
+        case 'heading': {
+          const tag = ['h1', 'h2', 'h3', 'h4'].includes(p.tag) ? p.tag : 'h2';
+          const editAttr = isExport ? '' : `ondblclick="enableInlineTextEdit(event, '${block.id}', 'text')"`;
+          inner = `<${tag} style="${css}" ${editAttr}>${escapeHTML(p.text)}</${tag}>`;
+          break;
+        }
+        case 'paragraph': {
+          const editAttr = isExport ? '' : `ondblclick="enableInlineTextEdit(event, '${block.id}', 'text')"`;
+          inner = `<p style="${css};white-space:pre-line;" ${editAttr}>${escapeHTML(p.text)}</p>`;
+          break;
+        }
+        case 'button': {
+          const editAttr = isExport ? '' : `ondblclick="enableInlineTextEdit(event, '${block.id}', 'label')" onclick="event.preventDefault()"`;
+          const alignWrap = block.style.textAlign ? `text-align:${block.style.textAlign};` : '';
+          inner = `<div style="${alignWrap}"><a href="${escapeHTML(p.href || '#')}" target="${escapeHTML(p.target || '_self')}" style="text-decoration:none;cursor:pointer;${css}" ${editAttr}>${escapeHTML(p.label)}</a></div>`;
+          break;
+        }
+        case 'image': {
+          inner = `<img src="${escapeHTML(p.src)}" alt="${escapeHTML(p.alt || '')}" style="display:block;width:100%;height:${p.height || 260}px;object-fit:${p.objectFit || 'cover'};${css}" />`;
+          break;
+        }
+        case 'video': {
+          inner = `<div style="overflow:hidden;${css}"><iframe src="${escapeHTML(p.url)}" style="width:100%;height:${p.height || 320}px;border:0;display:block;" allowfullscreen></iframe></div>`;
+          break;
+        }
+        case 'badge': {
+          const alignWrap = block.style.textAlign ? `text-align:${block.style.textAlign};` : '';
+          inner = `<div style="${alignWrap}"><span style="display:inline-flex;align-items:center;gap:6px;${css}">${escapeHTML(p.icon || '')} ${escapeHTML(p.text)}</span></div>`;
+          break;
+        }
+        case 'divider': {
+          inner = `<hr style="border:0;border-top:${p.thickness || 2}px solid ${p.lineColor || '#e2e8f0'};${css}" />`;
+          break;
+        }
+        case 'spacer': {
+          inner = `<div style="height:${p.height || 32}px;width:100%;"></div>`;
+          break;
+        }
+        case 'card': {
+          const bodyHtml = escapeHTML(p.body || '').replace(/\n/g, '<br>');
+          inner = `
+            <div style="${css}">
+              <div style="font-size:28px;margin-bottom:10px;">${escapeHTML(p.icon || '⚡')}</div>
+              <h3 style="font-size:19px;font-weight:800;margin-bottom:8px;">${escapeHTML(p.title)}</h3>
+              <p style="font-size:14px;opacity:0.85;line-height:1.6;margin-bottom:14px;">${bodyHtml}</p>
+              ${p.btnText ? `<a href="${escapeHTML(p.btnHref || '#')}" ${isExport ? '' : 'onclick="event.preventDefault()"'} style="display:inline-block;font-size:13px;font-weight:700;color:#4f46e5;text-decoration:none;">${escapeHTML(p.btnText)}</a>` : ''}
+            </div>`;
+          break;
+        }
+        case 'form': {
+          const submitJs = isExport
+            ? `onsubmit="event.preventDefault();this.querySelector('.form-ok').style.display='block';this.reset();"`
+            : `onsubmit="event.preventDefault()"`;
+          inner = `
+            <form ${submitJs} style="${css}">
+              <h3 style="font-size:20px;font-weight:800;margin-bottom:14px;">${escapeHTML(p.title)}</h3>
+              <div style="margin-bottom:10px;"><input type="text" required placeholder="${escapeHTML(p.namePlaceholder)}" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;"/></div>
+              <div style="margin-bottom:10px;"><input type="email" required placeholder="${escapeHTML(p.emailPlaceholder)}" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;"/></div>
+              <div style="margin-bottom:12px;"><textarea rows="3" required placeholder="${escapeHTML(p.msgPlaceholder)}" style="width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;font-family:inherit;"></textarea></div>
+              <button type="submit" style="width:100%;padding:12px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">${escapeHTML(p.submitLabel)}</button>
+              <div class="form-ok" style="display:none;margin-top:10px;padding:10px;border-radius:8px;background:#dcfce7;color:#166534;font-size:13px;font-weight:700;">${escapeHTML(p.successMsg)}</div>
+            </form>`;
+          break;
+        }
+        case 'html': {
+          inner = `<div style="${css}">${p.code || ''}</div>`;
+          break;
+        }
+        case 'grid2':
+        case 'grid3': {
+          const colCount = block.type === 'grid2' ? 2 : 3;
+          const colsHtml = (block.columns || []).slice(0, colCount).map((colItems, cIdx) => {
+            const childrenHtml = colItems.map(child => renderBlockHTML(child, isExport)).join('');
+            if (isExport) {
+              return `<div class="solu-col">${childrenHtml}</div>`;
+            }
+            return `
+              <div class="wb-grid-col"
+                   ondragover="handleColumnDragOver(event)"
+                   ondragleave="handleColumnDragLeave(event)"
+                   ondrop="handleColumnDrop(event, '${block.id}', ${cIdx})">
+                ${childrenHtml || `<div class="wb-col-placeholder">+ Drop Element (Col ${cIdx + 1})</div>`}
+              </div>`;
+          }).join('');
+
+          const gridClass = block.type === 'grid2' ? 'solu-grid-2' : 'solu-grid-3';
+          inner = `<div class="${gridClass}" style="display:grid;grid-template-columns:repeat(${colCount}, minmax(0, 1fr));gap:${p.gap || 20}px;${css}">${colsHtml}</div>`;
+          break;
+        }
+      }
+
+      if (isExport) return inner;
+
+      return `
+        <div class="wb-node wb-block ${isSelected ? 'wb-selected' : ''}"
+             data-node-id="${block.id}"
+             draggable="true"
+             ondragstart="handleExistingNodeDragStart(event, '${block.id}')"
+             ondragover="handleNodeDragOver(event)"
+             ondragleave="handleNodeDragLeave(event)"
+             ondrop="handleNodeDrop(event, '${block.id}')"
+             onclick="selectNode('${block.id}', event)">
+          ${isSelected ? buildToolbarHTML(block, block.type) : ''}
+          ${inner}
+        </div>
+      `;
+    }
+
+    function renderSectionHTML(sec, isExport = false) {
+      const isSelected = !isExport && state.selectedId === sec.id;
+      const outerStyle = styleObjToCSS(sec.style, false);
+      const innerMaxW = sec.style?.maxWidth ? `max-width:${sec.style.maxWidth};margin:0 auto;width:100%;` : 'width:100%;';
+      const blocksHtml = (sec.blocks || []).map(b => renderBlockHTML(b, isExport)).join('');
+
+      if (isExport) {
+        return `<section style="${outerStyle}"><div style="${innerMaxW}">${blocksHtml}</div></section>`;
+      }
+
+      return `
+        <section class="wb-node wb-section ${isSelected ? 'wb-selected' : ''}"
+                 data-node-id="${sec.id}"
+                 draggable="true"
+                 ondragstart="handleExistingNodeDragStart(event, '${sec.id}')"
+                 ondragover="handleNodeDragOver(event)"
+                 ondragleave="handleNodeDragLeave(event)"
+                 ondrop="handleNodeDrop(event, '${sec.id}')"
+                 onclick="selectNode('${sec.id}', event)"
+                 style="${outerStyle}">
+          ${isSelected ? buildToolbarHTML(sec, sec.name || 'Section') : ''}
+          <div style="${innerMaxW}">
+            ${blocksHtml || `<div style="padding:28px;border:1px dashed #94a3b8;border-radius:8px;text-align:center;color:#64748b;font-size:12px;">Empty Section — Drag elements here</div>`}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderCanvas() {
+      const frame = document.getElementById('canvasFrame');
+      if (state.sections.length === 0) {
+        frame.innerHTML = `
+          <div class="empty-canvas-dropzone"
+               ondragover="event.preventDefault();this.classList.add('drag-over')"
+               ondragleave="this.classList.remove('drag-over')"
+               ondrop="handleEmptyCanvasDrop(event)">
+            <div style="font-size:38px;margin-bottom:10px;">🎨</div>
+            <h3 style="font-size:18px;font-weight:800;color:#0f172a;margin-bottom:6px;">Your Website Canvas is Ready!</h3>
+            <p style="font-size:13px;max-width:420px;line-height:1.5;margin-bottom:16px;">
+              Drag & drop <strong>Elements</strong> or <strong>Sections</strong> from the Left Sidebar, or choose a ready-made <strong>Starter Template</strong> from the top bar.
+            </p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+              <button onclick="loadStarterTemplate('saas')" style="padding:9px 16px;border-radius:8px;border:none;background:#4f46e5;color:#fff;font-weight:700;cursor:pointer;">🚀 Load SaaS Template</button>
+              <button onclick="loadStarterTemplate('shop')" style="padding:9px 16px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;color:#0f172a;font-weight:700;cursor:pointer;">🏪 Load Shop / CSC Template</button>
+            </div>
+          </div>`;
+        return;
+      }
+
+      frame.innerHTML = state.sections.map(s => renderSectionHTML(s, false)).join('');
+    }
+
+    /*************************************************************************
+     * 6. TRUE HTML5 DRAG & DROP + CLICK-TO-ADD ENGINE
+     *************************************************************************/
+    function startPaletteDrag(e, kind, value) {
+      state.dragPayload = { source: 'palette', kind, value };
+      e.dataTransfer.effectAllowed = 'copy';
+      e.dataTransfer.setData('text/plain', JSON.stringify(state.dragPayload));
+    }
+
+    function handleExistingNodeDragStart(e, nodeId) {
+      e.stopPropagation();
+      state.dragPayload = { source: 'existing', nodeId };
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', JSON.stringify(state.dragPayload));
+    }
+
+    function handleNodeDragOver(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const el = e.currentTarget;
+      const rect = el.getBoundingClientRect();
+      const isTopHalf = (e.clientY - rect.top) < rect.height / 2;
+      el.classList.toggle('drop-before', isTopHalf);
+      el.classList.toggle('drop-after', !isTopHalf);
+    }
+
+    function handleNodeDragLeave(e) {
+      e.currentTarget.classList.remove('drop-before', 'drop-after');
+    }
+
+    function handleNodeDrop(e, targetId) {
+      e.preventDefault();
+      e.stopPropagation();
+      const el = e.currentTarget;
+      const insertBefore = el.classList.contains('drop-before');
+      el.classList.remove('drop-before', 'drop-after');
+
+      const payload = state.dragPayload;
+      if (!payload) return;
+
+      const targetInfo = findNodeById(targetId);
+      if (!targetInfo) return;
+
+      if (payload.source === 'palette') {
+        if (payload.kind === 'section') {
+          const newSec = createSectionNode(payload.value);
+          // Find top-level section index
+          let secIdx = state.sections.findIndex(s => s.id === targetId);
+          if (secIdx === -1 && targetInfo.parentInfo) {
+            // Walk up to top section
+            let cur = targetInfo;
+            while (cur && cur.parentInfo) {
+              cur = findNodeById(cur.parentInfo.parent.id);
+            }
+            if (cur) secIdx = cur.index;
+          }
+          if (secIdx === -1) secIdx = state.sections.length - 1;
+          state.sections.splice(insertBefore ? secIdx : secIdx + 1, 0, newSec);
+          state.selectedId = newSec.id;
+        } else if (payload.kind === 'element') {
+          const newBlk = createBlockNode(payload.value);
+          if (targetInfo.node.blocks) {
+            // Dropped directly onto a section
+            targetInfo.node.blocks.push(newBlk);
+          } else {
+            const idx = insertBefore ? targetInfo.index : targetInfo.index + 1;
+            targetInfo.parentList.splice(idx, 0, newBlk);
+          }
+          state.selectedId = newBlk.id;
+        }
+        snapshotState(true);
+        renderAll();
+      } else if (payload.source === 'existing' && payload.nodeId !== targetId) {
+        const movingInfo = findNodeById(payload.nodeId);
+        if (!movingInfo) return;
+        const movingIsSection = Boolean(movingInfo.node.blocks);
+        const targetIsSection = Boolean(targetInfo.node.blocks);
+
+        if (movingIsSection && targetIsSection) {
+          const [moved] = movingInfo.parentList.splice(movingInfo.index, 1);
+          const freshTarget = findNodeById(targetId);
+          const idx = insertBefore ? freshTarget.index : freshTarget.index + 1;
+          freshTarget.parentList.splice(idx, 0, moved);
+          snapshotState(true);
+          renderAll();
+        } else if (!movingIsSection && !targetIsSection) {
+          const [moved] = movingInfo.parentList.splice(movingInfo.index, 1);
+          const freshTarget = findNodeById(targetId);
+          if (freshTarget) {
+            const idx = insertBefore ? freshTarget.index : freshTarget.index + 1;
+            freshTarget.parentList.splice(idx, 0, moved);
+            snapshotState(true);
+            renderAll();
+          }
+        }
+      }
+      state.dragPayload = null;
+    }
+
+    function handleColumnDragOver(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.currentTarget.classList.add('drag-over');
+    }
+
+    function handleColumnDragLeave(e) {
+      e.currentTarget.classList.remove('drag-over');
+    }
+
+    function handleColumnDrop(e, gridBlockId, colIdx) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.currentTarget.classList.remove('drag-over');
+
+      const payload = state.dragPayload;
+      if (!payload) return;
+      const gridInfo = findNodeById(gridBlockId);
+      if (!gridInfo || !gridInfo.node.columns) return;
+
+      if (payload.source === 'palette' && payload.kind === 'element') {
+        const newBlk = createBlockNode(payload.value);
+        gridInfo.node.columns[colIdx].push(newBlk);
+        state.selectedId = newBlk.id;
+        snapshotState(true);
+        renderAll();
+      } else if (payload.source === 'existing') {
+        const movingInfo = findNodeById(payload.nodeId);
+        if (!movingInfo || movingInfo.node.blocks || movingInfo.node.id === gridBlockId) return;
+        const [moved] = movingInfo.parentList.splice(movingInfo.index, 1);
+        gridInfo.node.columns[colIdx].push(moved);
+        snapshotState(true);
+        renderAll();
+      }
+      state.dragPayload = null;
+    }
+
+    function handleEmptyCanvasDrop(e) {
+      e.preventDefault();
+      const payload = state.dragPayload;
+      if (!payload || payload.source !== 'palette') return;
+      if (payload.kind === 'section') {
+        insertSectionByClick(payload.value);
+      } else {
+        insertElementByClick(payload.value);
+      }
+      state.dragPayload = null;
+    }
+
+    function insertSectionByClick(presetId) {
+      const sec = createSectionNode(presetId);
+      state.sections.push(sec);
+      state.selectedId = sec.id;
+      snapshotState(true);
+      renderAll();
+      showToast(`➕ Added "${sec.name}"`);
+    }
+
+    function insertElementByClick(elemType) {
+      const blk = createBlockNode(elemType);
+      if (state.sections.length === 0) {
+        const sec = createSectionNode('blank');
+        sec.name = 'Content Section';
+        sec.blocks.push(blk);
+        state.sections.push(sec);
+      } else {
+        const found = findNodeById(state.selectedId);
+        if (found && found.node.blocks) {
+          found.node.blocks.push(blk);
+        } else if (found && found.parentList) {
+          found.parentList.splice(found.index + 1, 0, blk);
+        } else {
+          state.sections[state.sections.length - 1].blocks.push(blk);
+        }
+      }
+      state.selectedId = blk.id;
+      snapshotState(true);
+      renderAll();
+      showToast(`➕ Inserted ${elemType.toUpperCase()}`);
+    }
+
+    // Direct Double-Click Inline Text Editing
+    function enableInlineTextEdit(e, blockId, propKey) {
+      e.stopPropagation();
+      const el = e.currentTarget;
+      el.setAttribute('contenteditable', 'true');
+      el.focus();
+
+      const finishEdit = () => {
+        el.removeAttribute('contenteditable');
+        const found = findNodeById(blockId);
+        if (found) {
+          found.node.props[propKey] = el.innerText.trim();
+          snapshotState(true);
+          renderInspector();
+        }
+      };
+
+      el.onblur = finishEdit;
+      el.onkeydown = (ev) => {
+        if (ev.key === 'Escape') {
+          el.blur();
+        }
+      };
+    }
+
+    /*************************************************************************
+     * 7. LEFT PALETTE & LAYERS NAVIGATOR RENDERING
+     *************************************************************************/
+    function renderLeftPalettes() {
+      const makeElemCard = (item) => `
+        <div class="palette-item"
+             draggable="true"
+             ondragstart="startPaletteDrag(event, 'element', '${item.type}')"
+             onclick="insertElementByClick('${item.type}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${item.svg}</svg>
+          <span>${item.label}</span>
+        </div>`;
+
+      document.getElementById('basicElementsGrid').innerHTML =
+        BASIC_ELEMENTS.filter(i => i.group === 'basic').map(makeElemCard).join('');
+
+      document.getElementById('layoutElementsGrid').innerHTML =
+        BASIC_ELEMENTS.filter(i => i.group === 'layout').map(makeElemCard).join('');
+
+      document.getElementById('prebuiltSectionsList').innerHTML = PREBUILT_SECTIONS.map(sec => `
+        <div class="section-card-item"
+             draggable="true"
+             ondragstart="startPaletteDrag(event, 'section', '${sec.id}')"
+             onclick="insertSectionByClick('${sec.id}')">
+          <div class="section-card-info">
+            <div class="section-card-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${sec.svg}</svg>
+            </div>
+            <div>
+              <div class="section-card-title">${sec.title}</div>
+              <div class="section-card-desc">${sec.desc}</div>
+            </div>
+          </div>
+          <span style="font-size:14px;color:var(--text-muted);font-weight:800;">+</span>
+        </div>
+      `).join('');
+    }
+
+    function renderLayersTree() {
+      const container = document.getElementById('layersTreeContainer');
+      if (state.sections.length === 0) {
+        container.innerHTML = `<div style="text-align:center;color:var(--text-dim);padding:24px 8px;font-size:11px;">No sections on page yet.</div>`;
+        return;
+      }
+
+      function renderTreeNodes(nodes) {
+        return nodes.map(n => {
+          const isSec = Boolean(n.blocks);
+          const isSel = state.selectedId === n.id;
+          const label = isSec ? `📦 ${n.name || 'Section'}` : `🔹 ${n.type.toUpperCase()}`;
+          let childrenHtml = '';
+          if (isSec && n.blocks.length > 0) {
+            childrenHtml = `<div class="layer-children">${renderTreeNodes(n.blocks)}</div>`;
+          } else if (n.columns) {
+            const flatCols = n.columns.flat();
+            if (flatCols.length > 0) {
+              childrenHtml = `<div class="layer-children">${renderTreeNodes(flatCols)}</div>`;
+            }
+          }
+          return `
+            <div>
+              <div class="layer-node ${isSel ? 'selected' : ''}" onclick="selectNode('${n.id}', event)">
+                <span style="truncate">${escapeHTML(label)}</span>
+                <div class="layer-actions">
+                  <button class="layer-mini-btn" onclick="moveNodeById('${n.id}', -1, event)" title="Up">↑</button>
+                  <button class="layer-mini-btn" onclick="moveNodeById('${n.id}', 1, event)" title="Down">↓</button>
+                  <button class="layer-mini-btn" onclick="deleteNodeById('${n.id}', event)" title="Delete">✕</button>
+                </div>
+              </div>
+              ${childrenHtml}
+            </div>`;
+        }).join('');
+      }
+
+      container.innerHTML = renderTreeNodes(state.sections);
+    }
+
+    /*************************************************************************
+     * 8. RIGHT SIDEBAR LIVE PROPERTY & STYLE INSPECTOR
+     *************************************************************************/
+    function updateSelectedProp(key, val) {
+      const found = findNodeById(state.selectedId);
+      if (!found) return;
+      if (found.node.blocks) {
+        found.node[key] = val;
+      } else {
+        found.node.props[key] = val;
+      }
+      snapshotState(true);
+      renderCanvas();
+      renderLayersTree();
+    }
+
+    function updateSelectedStyle(key, val) {
+      const found = findNodeById(state.selectedId);
+      if (!found) return;
+      found.node.style[key] = val;
+      snapshotState(true);
+      renderCanvas();
+    }
+
+    function handleInspectorImageUpload(event, targetKind) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (targetKind === 'imgSrc') {
+          updateSelectedProp('src', e.target.result);
+        } else if (targetKind === 'bgImage') {
+          updateSelectedStyle('bgImage', e.target.result);
+        }
+        renderInspector();
+        showToast('🖼️ Image embedded as offline Base64!');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function renderInspector() {
+      const box = document.getElementById('inspectorContainer');
+      const found = findNodeById(state.selectedId);
+
+      if (!found) {
+        box.innerHTML = `
+          <div style="text-align:center;padding:36px 14px;color:var(--text-muted);">
+            <div style="font-size:32px;margin-bottom:10px;">🎯</div>
+            <h4 style="font-size:13px;font-weight:800;color:var(--text-main);margin-bottom:6px;">Select Any Element or Section</h4>
+            <p style="font-size:11px;line-height:1.5;">Click any block on the center canvas to edit its text, images, colors, typography, spacing, borders, and shadows.</p>
+          </div>`;
+        return;
+      }
+
+      const node = found.node;
+      const isSection = Boolean(node.blocks);
+      const s = node.style || defaultStyle();
+      const p = node.props || {};
+
+      if (state.rightTab === 'content') {
+        if (isSection) {
+          box.innerHTML = `
+            <div class="prop-group">
+              <div class="prop-group-title"><span>Section Settings</span><span>📦</span></div>
+              <div class="prop-row">
+                <div class="prop-label">Section Label (Navigator)</div>
+                <input class="prop-input" type="text" value="${escapeHTML(node.name || '')}" oninput="updateSelectedProp('name', this.value)" />
+              </div>
+              <div class="prop-row">
+                <div class="prop-label">Content Container Max-Width</div>
+                <select class="prop-select" onchange="updateSelectedStyle('maxWidth', this.value)">
+                  <option value="1200px" ${s.maxWidth === '1200px' ? 'selected' : ''}>Standard (1200px)</option>
+                  <option value="1160px" ${s.maxWidth === '1160px' ? 'selected' : ''}>Container (1160px)</option>
+                  <option value="900px" ${s.maxWidth === '900px' ? 'selected' : ''}>Narrow Reading (900px)</option>
+                  <option value="100%" ${s.maxWidth === '100%' ? 'selected' : ''}>Full Bleed (100%)</option>
+                </select>
+              </div>
+            </div>`;
+          return;
+        }
+
+        let fieldsHtml = '';
+        if (node.type === 'heading') {
+          fieldsHtml = `
+            <div class="prop-row">
+              <div class="prop-label">Heading Tag</div>
+              <select class="prop-select" onchange="updateSelectedProp('tag', this.value)">
+                ${['h1', 'h2', 'h3', 'h4'].map(t => `<option value="${t}" ${p.tag === t ? 'selected' : ''}>${t.toUpperCase()}</option>`).join('')}
+              </select>
+            </div>
+            <div class="prop-row">
+              <div class="prop-label">Heading Text</div>
+              <textarea class="prop-textarea" rows="3" oninput="updateSelectedProp('text', this.value)">${escapeHTML(p.text)}</textarea>
+            </div>`;
+        } else if (node.type === 'paragraph') {
+          fieldsHtml = `
+            <div class="prop-row">
+              <div class="prop-label">Paragraph Content</div>
+              <textarea class="prop-textarea" rows="5" oninput="updateSelectedProp('text', this.value)">${escapeHTML(p.text)}</textarea>
+            </div>`;
+        } else if (node.type === 'button') {
+          fieldsHtml = `
+            <div class="prop-row">
+              <div class="prop-label">Button Label</div>
+              <input class="prop-input" type="text" value="${escapeHTML(p.label)}" oninput="updateSelectedProp('label', this.value)" />
+            </div>
+            <div class="prop-row">
+              <div class="prop-label">Link URL (href)</div>
+              <input class="prop-input" type="text" value="${escapeHTML(p.href)}" oninput="updateSelectedProp('href', this.value)" />
+            </div>
+            <div class="prop-row">
+              <div class="prop-label">Open Link In</div>
+              <select class="prop-select" onchange="updateSelectedProp('target', this.value)">
+                <option value="_self" ${p.target === '_self' ? 'selected' : ''}>Same Tab (_self)</option>
+                <option value="_blank" ${p.target === '_blank' ? 'selected' : ''}>New Tab (_blank)</option>
+              </select>
+            </div>`;
+        } else if (node.type === 'image') {
+          fieldsHtml = `
+            <div class="prop-row">
+              <div class="prop-label">Upload Image from Device (Base64)</div>
+              <input class="prop-input" type="file" accept="image/*" onchange="handleInspectorImageUpload(event, 'imgSrc')" />
+            </div>
+            <div class="prop-row">
+              <div class="prop-label">Or Image URL</div>
+              <input class="prop-input" type="text" value="${escapeHTML(p.src)}" onchange="updateSelectedProp('src', this.value)" />
+            </div>
+            <div class="prop-grid-2">
+              <div class="prop-row">
+                <div class="prop-label">Height (px)</div>
+                <input class="prop-input" type="number" value="${p.height || 260}" oninput="updateSelectedProp('height', Number(this.value))" />
+              </div>
+              <div class="prop-row">
+                <div class="prop-label">Object Fit</div>
+                <select class="prop-select" onchange="updateSelectedProp('objectFit', this.value)">
+                  <option value="cover" ${p.objectFit === 'cover' ? 'selected' : ''}>Cover</option>
+                  <option value="contain" ${p.objectFit === 'contain' ? 'selected' : ''}>Contain</option>
+                </select>
+              </div>
+            </div>
+            <div class="prop-row">
+              <div class="prop-label">Alt Text</div>
+              <input class="prop-input" type="text" value="${escapeHTML(p.alt || '')}" oninput="updateSelectedProp('alt', this.value)" />
+            </div>`;
+        } else if (node.type === 'video') {
+          fieldsHtml = `
+            <div class="prop-row">
+              <div class="prop-label">Embed Video URL (YouTube / MP4)</div>
+              <input class="prop-input" type="text" value="${escapeHTML(p.url)}" onchange="updateSelectedProp('url', this.value)" />
+            </div>
+            <div class="prop-row">
+              <div class="prop-label">Player Height (px)</div>
+              <input class="prop-input" type="number" value="${p.height || 320}" oninput="updateSelectedProp('height', Number(this.value))" />
+            </div>`;
+        } else if (node.type === 'badge') {
+          fieldsHtml = `
+            <div class="prop-grid-2">
+              <div class="prop-row">
+                <div class="prop-label">Icon / Emoji</div>
+                <input class="prop-input" type="text" value="${escapeHTML(p.icon || '')}" oninput="updateSelectedProp('icon', this.value)" />
+              </div>
+              <div class="prop-row">
+                <div class="prop-label">Badge Label</div>
+                <input class="prop-input" type="text" value="${escapeHTML(p.text)}" oninput="updateSelectedProp('text', this.value)" />
+              </div>
+            </div>`;
+        } else if (node.type === 'divider') {
+          fieldsHtml = `
+            <div class="prop-grid-2">
+              <div class="prop-row">
+                <div class="prop-label">Thickness (px)</div>
+                <input class="prop-input" type="number" min="1" max="12" value="${p.thickness || 2}" oninput="updateSelectedProp('thickness', Number(this.value))" />
+              </div>
+              <div class="prop-row">
+                <div class="prop-label">Line Color</div>
+                <input class="prop-input" type="color" value="${p.lineColor || '#e2e8f0'}" oninput="updateSelectedProp('lineColor', this.value)" />
+              </div>
+            </div>`;
+        } else if (node.type === 'spacer') {
+          fieldsHtml = `
+            <div class="prop-row">
+              <div class="prop-label"><span>Spacer Height</span><span>${p.height || 32}px</span></div>
+              <input type="range" min="8" max="200" value="${p.height || 32}" oninput="updateSelectedProp('height', Number(this.value));renderInspector();" />
+            </div>`;
+        } else if (node.type === 'grid2' || node.type === 'grid3') {
+          fieldsHtml = `
+            <div class="prop-row">
+              <div class="prop-label"><span>Column Gap</span><span>${p.gap || 20}px</span></div>
+              <input type="range" min="0" max="64" value="${p.gap || 20}" oninput="updateSelectedProp('gap', Number(this.value));renderInspector();" />
+            </div>`;
+        } else if (node.type === 'card') {
+          fieldsHtml = `
+            <div class="prop-grid-2">
+              <div class="prop-row"><div class="prop-label">Icon</div><input class="prop-input" type="text" value="${escapeHTML(p.icon)}" oninput="updateSelectedProp('icon', this.value)" /></div>
+              <div class="prop-row"><div class="prop-label">Link Text</div><input class="prop-input" type="text" value="${escapeHTML(p.btnText)}" oninput="updateSelectedProp('btnText', this.value)" /></div>
+            </div>
+            <div class="prop-row"><div class="prop-label">Card Title</div><input class="prop-input" type="text" value="${escapeHTML(p.title)}" oninput="updateSelectedProp('title', this.value)" /></div>
+            <div class="prop-row"><div class="prop-label">Card Description</div><textarea class="prop-textarea" rows="4" oninput="updateSelectedProp('body', this.value)">${escapeHTML(p.body)}</textarea></div>
+            <div class="prop-row"><div class="prop-label">Link URL</div><input class="prop-input" type="text" value="${escapeHTML(p.btnHref)}" oninput="updateSelectedProp('btnHref', this.value)" /></div>`;
+        } else if (node.type === 'form') {
+          fieldsHtml = `
+            <div class="prop-row"><div class="prop-label">Form Heading</div><input class="prop-input" type="text" value="${escapeHTML(p.title)}" oninput="updateSelectedProp('title', this.value)" /></div>
+            <div class="prop-row"><div class="prop-label">Submit Button Text</div><input class="prop-input" type="text" value="${escapeHTML(p.submitLabel)}" oninput="updateSelectedProp('submitLabel', this.value)" /></div>
+            <div class="prop-row"><div class="prop-label">Success Confirmation Message</div><input class="prop-input" type="text" value="${escapeHTML(p.successMsg)}" oninput="updateSelectedProp('successMsg', this.value)" /></div>`;
+        } else if (node.type === 'html') {
+          fieldsHtml = `
+            <div class="prop-row">
+              <div class="prop-label">Custom HTML / Inline CSS / SVG Code</div>
+              <textarea class="prop-textarea" rows="9" style="font-family:var(--font-mono);font-size:11px;" oninput="updateSelectedProp('code', this.value)">${escapeHTML(p.code)}</textarea>
+            </div>`;
+        }
+
+        box.innerHTML = `
+          <div class="prop-group">
+            <div class="prop-group-title"><span>${node.type.toUpperCase()} Content</span><span>✏️</span></div>
+            ${fieldsHtml}
+          </div>`;
+
+      } else if (state.rightTab === 'style') {
+        box.innerHTML = `
+          <div class="prop-group">
+            <div class="prop-group-title"><span>Typography</span><span>Aa</span></div>
+            <div class="prop-row">
+              <div class="prop-label">Font Family</div>
+              <select class="prop-select" onchange="updateSelectedStyle('fontFamily', this.value)">
+                ${FONT_FAMILIES.map(f => `<option value='${f.value}' ${s.fontFamily === f.value ? 'selected' : ''}>${f.label}</option>`).join('')}
+              </select>
+            </div>
+            <div class="prop-grid-2">
+              <div class="prop-row">
+                <div class="prop-label">Font Size (px)</div>
+                <input class="prop-input" type="number" min="10" max="96" value="${s.fontSize || ''}" placeholder="Auto" oninput="updateSelectedStyle('fontSize', this.value)" />
+              </div>
+              <div class="prop-row">
+                <div class="prop-label">Font Weight</div>
+                <select class="prop-select" onchange="updateSelectedStyle('fontWeight', this.value)">
+                  <option value="" ${!s.fontWeight ? 'selected' : ''}>Default</option>
+                  <option value="400" ${s.fontWeight === '400' ? 'selected' : ''}>400 Regular</option>
+                  <option value="600" ${s.fontWeight === '600' ? 'selected' : ''}>600 SemiBold</option>
+                  <option value="700" ${s.fontWeight === '700' ? 'selected' : ''}>700 Bold</option>
+                  <option value="800" ${s.fontWeight === '800' ? 'selected' : ''}>800 ExtraBold</option>
+                  <option value="900" ${s.fontWeight === '900' ? 'selected' : ''}>900 Black</option>
+                </select>
+              </div>
+            </div>
+            <div class="prop-row">
+              <div class="prop-label">Text Alignment</div>
+              <div class="align-btn-group">
+                ${['left', 'center', 'right', 'justify'].map(a => `<button class="align-btn ${s.textAlign === a ? 'active' : ''}" onclick="updateSelectedStyle('textAlign', '${a}');renderInspector();">${a.toUpperCase()}</button>`).join('')}
+              </div>
+            </div>
+            <div class="prop-grid-2">
+              <div class="prop-row">
+                <div class="prop-label">Line Height</div>
+                <input class="prop-input" type="number" step="0.1" min="0.9" max="2.5" value="${s.lineHeight || '1.5'}" oninput="updateSelectedStyle('lineHeight', this.value)" />
+              </div>
+              <div class="prop-row">
+                <div class="prop-label">Letter Spacing</div>
+                <input class="prop-input" type="number" step="0.5" min="-2" max="10" value="${s.letterSpacing || '0'}" oninput="updateSelectedStyle('letterSpacing', this.value)" />
+              </div>
+            </div>
+          </div>
+
+          <div class="prop-group">
+            <div class="prop-group-title"><span>Colors & Background</span><span>🎨</span></div>
+            <div class="prop-grid-2">
+              <div class="prop-row">
+                <div class="prop-label">Text Color</div>
+                <div class="color-picker-wrap">
+                  <input type="color" value="${s.color || '#0f172a'}" oninput="updateSelectedStyle('color', this.value);renderInspector();" />
+                  <input type="text" value="${s.color || ''}" placeholder="Inherit" onchange="updateSelectedStyle('color', this.value)" />
+                </div>
+              </div>
+              <div class="prop-row">
+                <div class="prop-label">Background Fill</div>
+                <div class="color-picker-wrap">
+                  <input type="color" value="${s.backgroundColor && s.backgroundColor !== 'transparent' ? s.backgroundColor : '#ffffff'}" oninput="updateSelectedStyle('backgroundColor', this.value);renderInspector();" />
+                  <input type="text" value="${s.backgroundColor || 'transparent'}" onchange="updateSelectedStyle('backgroundColor', this.value)" />
+                </div>
+              </div>
+            </div>
+
+            <div class="prop-row" style="margin-top:6px;">
+              <label style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;cursor:pointer;">
+                <input type="checkbox" ${s.useGradient ? 'checked' : ''} onchange="updateSelectedStyle('useGradient', this.checked);renderInspector();" />
+                <span>Enable 2-Color Gradient Background</span>
+              </label>
+            </div>
+
+            ${s.useGradient ? `
+              <div class="prop-grid-2" style="margin-top:6px;">
+                <div class="prop-row">
+                  <div class="prop-label">Start Color</div>
+                  <input class="prop-input" type="color" value="${s.gradColor1 || '#4f46e5'}" oninput="updateSelectedStyle('gradColor1', this.value)" />
+                </div>
+                <div class="prop-row">
+                  <div class="prop-label">End Color</div>
+                  <input class="prop-input" type="color" value="${s.gradColor2 || '#06b6d4'}" oninput="updateSelectedStyle('gradColor2', this.value)" />
+                </div>
+              </div>
+              <div class="prop-row">
+                <div class="prop-label"><span>Gradient Angle</span><span>${s.gradAngle || 135}°</span></div>
+                <input type="range" min="0" max="360" value="${s.gradAngle || 135}" oninput="updateSelectedStyle('gradAngle', Number(this.value));renderInspector();" />
+              </div>` : ''}
+
+            <div class="prop-row" style="margin-top:8px;">
+              <div class="prop-label">Background Image Upload (Base64)</div>
+              <input class="prop-input" type="file" accept="image/*" onchange="handleInspectorImageUpload(event, 'bgImage')" />
+              ${s.bgImage ? `<button class="btn btn-danger" style="width:100%;margin-top:5px;" onclick="updateSelectedStyle('bgImage', '');renderInspector();">Remove BG Image</button>` : ''}
+            </div>
+          </div>`;
+
+      } else if (state.rightTab === 'box') {
+        box.innerHTML = `
+          <div class="prop-group">
+            <div class="prop-group-title"><span>Padding & Margin (px)</span><span>📐</span></div>
+            <div class="prop-label">Padding (Top / Bottom / Left / Right)</div>
+            <div class="prop-grid-4" style="margin-bottom:9px;">
+              <input class="prop-input" type="number" title="Top" value="${s.paddingTop || 0}" oninput="updateSelectedStyle('paddingTop', Number(this.value))" />
+              <input class="prop-input" type="number" title="Bottom" value="${s.paddingBottom || 0}" oninput="updateSelectedStyle('paddingBottom', Number(this.value))" />
+              <input class="prop-input" type="number" title="Left" value="${s.paddingLeft || 0}" oninput="updateSelectedStyle('paddingLeft', Number(this.value))" />
+              <input class="prop-input" type="number" title="Right" value="${s.paddingRight || 0}" oninput="updateSelectedStyle('paddingRight', Number(this.value))" />
+            </div>
+            <div class="prop-grid-2">
+              <div class="prop-row">
+                <div class="prop-label">Margin Top (px)</div>
+                <input class="prop-input" type="number" value="${s.marginTop || 0}" oninput="updateSelectedStyle('marginTop', Number(this.value))" />
+              </div>
+              <div class="prop-row">
+                <div class="prop-label">Margin Bottom (px)</div>
+                <input class="prop-input" type="number" value="${s.marginBottom || 0}" oninput="updateSelectedStyle('marginBottom', Number(this.value))" />
+              </div>
+            </div>
+          </div>
+
+          <div class="prop-group">
+            <div class="prop-group-title"><span>Borders & Rounded Corners</span><span>⬜</span></div>
+            <div class="prop-grid-2">
+              <div class="prop-row">
+                <div class="prop-label">Border Width (px)</div>
+                <input class="prop-input" type="number" min="0" max="20" value="${s.borderWidth || 0}" oninput="updateSelectedStyle('borderWidth', Number(this.value))" />
+              </div>
+              <div class="prop-row">
+                <div class="prop-label">Border Style</div>
+                <select class="prop-select" onchange="updateSelectedStyle('borderStyle', this.value)">
+                  <option value="solid" ${s.borderStyle === 'solid' ? 'selected' : ''}>Solid</option>
+                  <option value="dashed" ${s.borderStyle === 'dashed' ? 'selected' : ''}>Dashed</option>
+                  <option value="dotted" ${s.borderStyle === 'dotted' ? 'selected' : ''}>Dotted</option>
+                </select>
+              </div>
+            </div>
+            <div class="prop-grid-2">
+              <div class="prop-row">
+                <div class="prop-label">Border Color</div>
+                <input class="prop-input" type="color" value="${s.borderColor || '#cbd5e1'}" oninput="updateSelectedStyle('borderColor', this.value)" />
+              </div>
+              <div class="prop-row">
+                <div class="prop-label">Corner Radius (px)</div>
+                <input class="prop-input" type="number" min="0" max="99" value="${s.borderRadius || 0}" oninput="updateSelectedStyle('borderRadius', Number(this.value))" />
+              </div>
+            </div>
+          </div>
+
+          <div class="prop-group">
+            <div class="prop-group-title"><span>Elevation Shadow & Opacity</span><span>✨</span></div>
+            <div class="prop-row">
+              <div class="prop-label">Box Shadow Preset</div>
+              <select class="prop-select" onchange="updateSelectedStyle('shadow', this.value)">
+                <option value="none" ${s.shadow === 'none' ? 'selected' : ''}>None (Flat)</option>
+                <option value="soft" ${s.shadow === 'soft' ? 'selected' : ''}>Soft Elevation</option>
+                <option value="medium" ${s.shadow === 'medium' ? 'selected' : ''}>Medium Card</option>
+                <option value="elevated" ${s.shadow === 'elevated' ? 'selected' : ''}>Deep Elevated</option>
+                <option value="glow" ${s.shadow === 'glow' ? 'selected' : ''}>Indigo Accent Glow</option>
+              </select>
+            </div>
+            <div class="prop-row">
+              <div class="prop-label"><span>Element Opacity</span><span>${s.opacity ?? 100}%</span></div>
+              <input type="range" min="10" max="100" value="${s.opacity ?? 100}" oninput="updateSelectedStyle('opacity', Number(this.value));renderInspector();" />
+            </div>
+          </div>`;
+      }
+    }
+
+    /*************************************************************************
+     * 9. STARTER TEMPLATES LOADER
+     *************************************************************************/
+    function loadStarterTemplate(tplKey) {
+      state.selectedId = null;
+      if (tplKey === 'blank') {
+        state.sections = [];
+      } else if (tplKey === 'saas') {
+        state.sections = [
+          createSectionNode('navbar'),
+          createSectionNode('hero_split'),
+          createSectionNode('features_3'),
+          createSectionNode('pricing_3'),
+          createSectionNode('faq'),
+          createSectionNode('cta_banner'),
+          createSectionNode('footer')
+        ];
+      } else if (tplKey === 'shop') {
+        const nav = createSectionNode('navbar');
+        nav.blocks[0].props.code = nav.blocks[0].props.code.replace('SOLU<span style="color:#818cf8;">STUDIO</span>', 'SOLU<span style="color:#34d399;">DIGITAL CSC</span>');
+        const hero = createSectionNode('hero_gradient');
+        hero.blocks[0].props.text = 'AUTHORIZED DIGITAL & CSC SERVICE CENTER';
+        hero.blocks[1].props.text = 'PAN Card, Passport, Online Forms, PVC ID & Print Services';
+        hero.blocks[2].props.text = 'Fast, reliable, and government-compliant digital services under one roof. Visit our shop or book your slot online.';
+        hero.blocks[3].props.label = 'Book Service Online →';
+        state.sections = [
+          nav,
+          hero,
+          createSectionNode('features_3'),
+          createSectionNode('testimonials'),
+          createSectionNode('contact_sec'),
+          createSectionNode('footer')
+        ];
+      } else if (tplKey === 'portfolio') {
+        const hero = createSectionNode('hero_split');
+        hero.blocks[0].columns[0][0].props.text = 'CREATIVE DESIGN & WEB AGENCY';
+        hero.blocks[0].columns[0][1].props.text = 'We Craft Digital Brands That Stand Out';
+        state.sections = [
+          createSectionNode('navbar'),
+          hero,
+          createSectionNode('gallery_3'),
+          createSectionNode('about_split'),
+          createSectionNode('contact_sec'),
+          createSectionNode('footer')
+        ];
+      }
+      snapshotState(true);
+      renderAll();
+      showToast(`✨ Loaded "${tplKey.toUpperCase()}" Starter Template`);
+    }
+
+    function handleTemplateDropdown(sel) {
+      if (!sel.value) return;
+      loadStarterTemplate(sel.value);
+      sel.value = '';
+    }
+
+    function clearCanvasConfirm() {
+      state.sections = [];
+      state.selectedId = null;
+      snapshotState(true);
+      renderAll();
+      showToast('🧹 Canvas cleared (Press Ctrl+Z to Undo)');
+    }
+
+    /*************************************************************************
+     * 10. STANDALONE PRODUCTION HTML COMPILER, PREVIEW & JSON SAVE/LOAD
+     *************************************************************************/
+    function generateStandaloneHTMLDocument() {
+      const bodyMarkup = state.sections.map(sec => renderSectionHTML(sec, true)).join('\n  ');
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Website Built with SOLU WEBSITE BUILDER PRO</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #0f172a;
+      background: #ffffff;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+    img { max-width: 100%; }
+    @media (max-width: 768px) {
+      .solu-grid-2, .solu-grid-3 {
+        grid-template-columns: 1fr !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  ${bodyMarkup}
+</body>
+</html>`;
+    }
+
+    function exportStandaloneHTML() {
+      const htmlStr = generateStandaloneHTMLDocument();
+      const blob = new Blob([htmlStr], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `solu_website_export_${Date.now()}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('🎉 Exported Clean Production .HTML File!');
+    }
+
+    function openLivePreview() {
+      const htmlStr = generateStandaloneHTMLDocument();
+      const modal = document.getElementById('livePreviewModal');
+      const iframe = document.getElementById('livePreviewIframe');
+      iframe.style.width = '100%';
+      iframe.srcdoc = htmlStr;
+      modal.classList.add('open');
+    }
+
+    function closeLivePreview() {
+      document.getElementById('livePreviewModal').classList.remove('open');
+    }
+
+    function setPreviewFrameWidth(w) {
+      document.getElementById('livePreviewIframe').style.width = w;
+    }
+
+    function openSourceModal() {
+      document.getElementById('generatedCodeOutput').textContent = generateStandaloneHTMLDocument();
+      document.getElementById('sourceCodeModal').classList.add('open');
+    }
+
+    function closeSourceModal() {
+      document.getElementById('sourceCodeModal').classList.remove('open');
+    }
+
+    function copyGeneratedCode() {
+      const text = document.getElementById('generatedCodeOutput').textContent;
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('📋 Copied Full HTML Code to Clipboard!');
+    }
+
+    function exportProjectJSON() {
+      const dataStr = JSON.stringify({ version: '1.0', sections: state.sections }, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `solu_builder_project_${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('💾 Saved Project .JSON File!');
+    }
+
+    function importProjectJSON(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (Array.isArray(parsed.sections)) {
+            state.sections = parsed.sections;
+            state.selectedId = null;
+            snapshotState(true);
+            renderAll();
+            showToast('📂 Loaded Project JSON Successfully!');
+          }
+        } catch (err) {
+          showToast('❌ Invalid JSON Project File');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    /*************************************************************************
+     * 11. NAVIGATION TABS, VIEWPORT SWITCHER, SHORTCUTS & INIT
+     *************************************************************************/
+    function setViewport(vp) {
+      state.viewport = vp;
+      const frame = document.getElementById('canvasFrame');
+      frame.classList.remove('vp-tablet', 'vp-mobile');
+      if (vp === 'tablet') frame.classList.add('vp-tablet');
+      if (vp === 'mobile') frame.classList.add('vp-mobile');
+
+      ['desktop', 'tablet', 'mobile'].forEach(k => {
+        document.getElementById(`vpBtn-${k}`).classList.toggle('active', k === vp);
+      });
+    }
+
+    function switchLeftTab(tab) {
+      state.leftTab = tab;
+      ['elements', 'sections', 'layers'].forEach(t => {
+        document.getElementById(`leftTab-${t}`).classList.toggle('active', t === tab);
+        document.getElementById(`leftPane-${t}`).style.display = t === tab ? 'block' : 'none';
+      });
+    }
+
+    function switchRightTab(tab) {
+      state.rightTab = tab;
+      ['content', 'style', 'box'].forEach(t => {
+        document.getElementById(`rightTab-${t}`).classList.toggle('active', t === tab);
+      });
+      renderInspector();
+    }
+
+    let toastTimeout = null;
+    function showToast(msg) {
+      const t = document.getElementById('studioToast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    function renderAll() {
+      renderCanvas();
+      renderLayersTree();
+      renderInspector();
+    }
+
+    // Keyboard shortcuts: Ctrl+Z, Ctrl+Y, Delete
+    window.addEventListener('keydown', (e) => {
+      if (document.activeElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+      if (document.activeElement && document.activeElement.isContentEditable) return;
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        undoAction();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        redoAction();
+      } else if ((e.key === 'Delete' || e.key === 'Backspace') && state.selectedId) {
+        e.preventDefault();
+        deleteNodeById(state.selectedId);
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderLeftPalettes();
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            state.sections = parsed;
+            snapshotState(true);
+            renderAll();
+            return;
+          }
+        }
+      } catch (e) {}
+      loadStarterTemplate('saas');
+    });
+  </script>
+</body>
+</html>
